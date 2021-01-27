@@ -1,0 +1,26 @@
+{
+  "name": "react-native-thermal-receipt-printer-example",
+  "description": "Example app for react-native-thermal-receipt-printer",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
+    "windows": "react-native run-windows",
+    "start": "react-native start",
+    "clean": "rimraf node_modules",
+    "start:from:scratch": "yarn clean && yarn install && yarn windows"
+  },
+  "dependencies": {
+    "react": "16.13.1",
+    "react-native": "0.63.2",
+    "react-native-windows": "^0.63.0-0",
+    "react-native-thermal-receipt-printer": "../"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.9.6",
+    "@babel/runtime": "^7.9.6",
+    "babel-plugin-module-resolver": "^4.0.0",
+    "metro-react-native-babel-preset": "^0.59.0"
+  }
+}
