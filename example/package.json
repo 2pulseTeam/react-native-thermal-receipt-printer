@@ -9,13 +9,14 @@
     "windows": "react-native run-windows",
     "start": "react-native start",
     "clean": "rimraf node_modules",
-    "start:from:scratch": "yarn clean && yarn install && yarn windows"
+    "install:lib": "rimraf node_modules/react-native-thermal-receipt-printer && yarn install",
+    "start:windows": "react-native start --use-react-native-windows --reset-cache"
   },
   "dependencies": {
     "react": "16.13.1",
     "react-native": "0.63.2",
     "react-native-windows": "^0.63.0-0",
-    "react-native-thermal-receipt-printer": "../"
+    "react-native-thermal-receipt-printer": "file:../"
   },
   "devDependencies": {
     "@babel/core": "^7.9.6",

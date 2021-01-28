@@ -34,22 +34,6 @@ export default function App() {
 
   console.log('STARTING APP ...');
 
-  React.useEffect(() => {
-    if (Platform.OS === 'windows') {
-      console.log('WINDOWS ! ');
-      NativeModules.FancyMath.add(
-        /* arg a */ NativeModules.FancyMath.Pi,
-        /* arg b */ NativeModules.FancyMath.E,
-        /* callback */ function (result: any) {
-          Alert.alert(
-            'FancyMath',
-            `FancyMath says ${NativeModules.FancyMath.Pi} + ${NativeModules.FancyMath.E} = ${result}`,
-            [{ text: 'OK' }],
-            {cancelable: false});
-        });
-    }
-  }, []);
-
   const [selectedValue, setSelectedValue] = React.useState<
     keyof typeof printerList
   >("net");

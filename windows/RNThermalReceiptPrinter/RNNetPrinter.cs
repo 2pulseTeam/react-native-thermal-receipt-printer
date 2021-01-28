@@ -20,26 +20,6 @@ namespace RNThermalReceiptPrinter
 {
     namespace RNThermalReceiptPrinter
     {
-        [ReactModule]
-        class FancyMath
-        {
-            [ReactConstant]
-            public double E = Math.E;
-
-            [ReactConstant("Pi")]
-            public double PI = Math.PI;
-
-            [ReactMethod("add")]
-            public double Add(double a, double b)
-            {
-                double result = a + b;
-                AddEvent(result);
-                return result;
-            }
-
-            [ReactEvent]
-            public Action<double> AddEvent { get; set; }
-        }
 
         [ReactModule]
         class RNNetPrinter
@@ -49,19 +29,19 @@ namespace RNThermalReceiptPrinter
             {
                 NetworkPrinter printer = new NetworkPrinter(host, port, false);
 
-                // var e = new EPSON();
-                // var data = new byte[]{}; // e.PrintLine("Total Payment:         89.95"),
+                var e = new EPSON();
+                var data = new byte[]{}; // e.PrintLine("Total Payment:         89.95"),
 
-                // try 
-                // {
-                //     printer.Write(
-                //         e.PrintLine("Total Payment:         89.95")
-                //     );
-                // } catch (Exception ex)
-                // {
-                //     System.Diagnostics.Debug.WriteLine($"Failed to reconnect: {ex.Message}");
-                //     throw;
-                // }
+                try 
+                {
+                    printer.Write(
+                        e.PrintLine("Total Payment:         89.95")
+                    );
+                } catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Failed to reconnect: {ex.Message}");
+                    throw;
+                }
             }
 
             [ReactEvent]
@@ -143,7 +123,7 @@ namespace RNThermalReceiptPrinter
                 {
                     if (_reconnectOnTimeout)
                     {
-                        Console.WriteLine("Trying to reconnect...");
+                        System.Diagnostics.Debug.WriteLine("Trying to reconnect...");
                         // StopMonitoring();
                         Writer?.Flush();
                         Writer?.Close();
@@ -153,7 +133,7 @@ namespace RNThermalReceiptPrinter
                         _socket?.Close();
 
                         Connect();
-                        Console.WriteLine("Reconnected!");
+                        System.Diagnostics.Debug.WriteLine("Reconnected!");
                         // StartMonitoring();
                     }
                 }
