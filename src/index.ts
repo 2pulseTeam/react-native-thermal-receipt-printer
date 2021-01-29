@@ -252,8 +252,7 @@ export const NetPrinter = {
       );
     } 
     else if (Platform.OS === 'windows') {
-      console.log('RNNetPrinter.printRawData', {text, arg: textTo64Buffer(text, opts)})
-      return RNNetPrinter.printRawData(text);
+      return RNNetPrinter.printRawData(textTo64Buffer(text, opts));
     } 
     else {
       return RNNetPrinter.printRawData(textTo64Buffer(text, opts), (error: Error) =>

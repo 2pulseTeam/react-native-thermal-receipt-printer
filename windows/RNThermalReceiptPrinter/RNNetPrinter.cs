@@ -102,21 +102,17 @@ namespace RNThermalReceiptPrinter
                 System.Diagnostics.Debug.WriteLine("RNNetPrinter - PrintRawData - START : " + text);
                 try
                 {
+
+                    var bytes = Convert.FromBase64String(text);
+
                     var e = new EPSON();
 
                     printer.Write(
-                        //ByteSplicer.Combine(
-                          // e.PrintLine(text)
-                          e.PrintLine(text)
-                        //)
+                        bytes
                     );
-                    // promise.Resolve(new JSValueObject());
                 } catch (Exception ex)
                 {
                     System.Diagnostics.Debug.WriteLine("RNNetPrinter - PrintRawData - Exception : " + ex.Message);
-                    var error = new ReactError();
-                    error.Exception = ex;
-                    promise.Reject(error);
                 }
                 System.Diagnostics.Debug.WriteLine("RNNetPrinter - PrintRawData - END : " + text);
             }

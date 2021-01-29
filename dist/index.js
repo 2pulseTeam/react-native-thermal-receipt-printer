@@ -215,8 +215,7 @@ export var NetPrinter = {
             return RNNetPrinter.printRawData(processedText.text, processedText.opts, function (error) { return console.warn(error); });
         }
         else if (Platform.OS === 'windows') {
-            console.log('RNNetPrinter.printRawData', { text: text, arg: textTo64Buffer(text, opts) });
-            return RNNetPrinter.printRawData(text);
+            return RNNetPrinter.printRawData(textTo64Buffer(text, opts));
         }
         else {
             return RNNetPrinter.printRawData(textTo64Buffer(text, opts), function (error) {

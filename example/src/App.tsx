@@ -104,7 +104,7 @@ export default function App() {
 
   const handlePrint = async () => {
     const Printer = printerList[selectedValue];
-    await Printer.printText("<C>C text</C>\n\n<D>D text</D>\n\n<B>B text<B>");
+    await Printer.printText("<C>C text</C>\n\n<D>D text</D>\n\n<B>B text<B>\n\n\n\n");
   };
 
   const onInit = async () => {
