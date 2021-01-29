@@ -40,7 +40,7 @@ export declare const NetPrinter: {
     getDeviceList: () => Promise<INetPrinter[]>;
     connectPrinter: (host: string, port: string) => Promise<INetPrinter>;
     closeConn: () => Promise<void>;
-    printText: (text: string, opts?: {}) => void;
+    printText: (text: string, opts?: {}) => any;
     printBill: (text: string, opts?: {}) => void;
 };
 export declare const NetPrinterEventEmitter: NativeEventEmitter;

@@ -197,13 +197,19 @@ export const BLEPrinter = {
 };
 
 export const NetPrinter = {
-  init: (): Promise<void> =>
-    new Promise((resolve, reject) =>
+  init: async (): Promise<void> => {
+    if (Platform.OS === "windows") {
+      return RNNetPrinter.init();
+    } 
+    
+    return new Promise<void>((resolve, reject) =>
       RNNetPrinter.init(
         () => resolve(),
         (error: Error) => reject(error)
       )
-    ),
+    );
+  },
+
 
   getDeviceList: (): Promise<INetPrinter[]> =>
     new Promise((resolve, reject) =>
@@ -213,32 +219,44 @@ export const NetPrinter = {
       )
     ),
 
-  connectPrinter: (host: string, port: string): Promise<INetPrinter> =>
-    new Promise((resolve, reject) =>
+  connectPrinter: async (host: string, port: string): Promise<INetPrinter> => {
+
+    if (Platform.OS === 'windows') {
+      console.log('RNThermalReceiptPrinter.connectPrinter - windows', {host, port});
+      return RNNetPrinter.connectPrinter(host, port);
+    }
+
+    return new Promise((resolve, reject) =>
       RNNetPrinter.connectPrinter(
         host,
         port,
         (printer: INetPrinter) => resolve(printer),
         (error: Error) => reject(error)
       )
-    ),
-
+    );
+  },
+  
   closeConn: (): Promise<void> =>
     new Promise((resolve) => {
       RNNetPrinter.closeConn();
       resolve();
     }),
 
-  printText: (text: string, opts = {}): void => {
+  printText: (text: string, opts = {}) => {
     if (Platform.OS === "ios") {
       const processedText = textPreprocessingIOS(text);
-      RNNetPrinter.printRawData(
+      return RNNetPrinter.printRawData(
         processedText.text,
         processedText.opts,
         (error: Error) => console.warn(error)
       );
-    } else {
-      RNNetPrinter.printRawData(textTo64Buffer(text, opts), (error: Error) =>
+    } 
+    else if (Platform.OS === 'windows') {
+      console.log('RNNetPrinter.printRawData', {text, arg: textTo64Buffer(text, opts)})
+      return RNNetPrinter.printRawData(text);
+    } 
+    else {
+      return RNNetPrinter.printRawData(textTo64Buffer(text, opts), (error: Error) =>
         console.warn(error)
       );
     }

@@ -13,7 +13,7 @@ using System.Collections.Generic;
 using Microsoft.ReactNative.Managed;
 
 // using ESCPOS_NET;
-// using ESCPOS_NET.Utilities;
+// using RNThermalReceiptPrinter.Utilities;
 // using ESCPOS_NET.Emitters;
 
 namespace RNThermalReceiptPrinter
@@ -24,28 +24,103 @@ namespace RNThermalReceiptPrinter
         [ReactModule]
         class RNNetPrinter
         {
-            [ReactMethod("connect")]
-            public void Connect(string host, int port)
+            private NetworkPrinter printer;
+
+            [ReactMethod("init")]
+            public void Init(ReactPromise<string> promise)
             {
-                NetworkPrinter printer = new NetworkPrinter(host, port, false);
+                System.Diagnostics.Debug.WriteLine("RNNetPrinter - Init - START");
 
-                var e = new EPSON();
-                var data = new byte[]{}; // e.PrintLine("Total Payment:         89.95"),
+                printer = new NetworkPrinter();
+                promise.Resolve("RNNetPrinter - Init success");
 
-                try 
+                if (printer != null)
                 {
-                    printer.Write(
-                        e.PrintLine("Total Payment:         89.95")
-                    );
-                } catch (Exception ex)
+                    System.Diagnostics.Debug.WriteLine("RNNetPrinter - Init - printer is defined");
+                }
+
+                System.Diagnostics.Debug.WriteLine("RNNetPrinter - Init - END");
+            }
+
+            [ReactMethod("getDeviceList")]
+            public void GetDeviceList(ReactPromise<JSValue> promise)
+            {
+                System.Diagnostics.Debug.WriteLine("RNNetPrinter - GetDeviceList - START");
+                var resultObject = new JSValueObject();
+
+                resultObject["device_name"] = "todo";
+                resultObject["host"] = "todo";
+                resultObject["port"] = "todo";
+
+                promise.Resolve(resultObject);
+            }
+
+            [ReactMethod("connectPrinter")]
+            public void ConnectPrinter(string host, int port, ReactPromise<JSValue> promise)
+            {
+
+                try
                 {
-                    System.Diagnostics.Debug.WriteLine($"Failed to reconnect: {ex.Message}");
-                    throw;
+
+                    if (printer == null)
+                    {
+                        System.Diagnostics.Debug.WriteLine("RNNetPrinter - ConnectPrinter - printer is null !!!");
+                        printer = new NetworkPrinter();
+                        //var error = new ReactError();
+                        //error.Message = "Aucune imprimante de selectionnée";
+                        //promise.Reject(error);
+                        //return;
+                    }
+
+                    System.Diagnostics.Debug.WriteLine("RNNetPrinter - ConnectPrinter - BEFORE");
+                    printer.Connect(host, port);
+                    promise.Resolve(new JSValueObject());
+                    System.Diagnostics.Debug.WriteLine("RNNetPrinter - ConnectPrinter - AFTER");
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("RNNetPrinter - ConnectPrinter - exception : " + ex.Message);
+
+                    var error = new ReactError();
+                    error.Exception = ex;
+                    promise.Reject(error);
+                }
+
+            }
+
+            [ReactMethod("closeConn")]
+            public void closeConn()
+            {
+                if (printer != null) {
+                    printer.Dispose();
                 }
             }
 
-            [ReactEvent]
-            public Action<double> ConnectEvent { get; set; }
+            [ReactMethod("printRawData")]
+            public void printRawData(string text)
+            {
+                System.Diagnostics.Debug.WriteLine("RNNetPrinter - PrintRawData - START : " + text);
+                try
+                {
+                    var e = new EPSON();
+
+                    printer.Write(
+                        //ByteSplicer.Combine(
+                          // e.PrintLine(text)
+                          e.PrintLine(text)
+                        //)
+                    );
+                    // promise.Resolve(new JSValueObject());
+                } catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("RNNetPrinter - PrintRawData - Exception : " + ex.Message);
+                    var error = new ReactError();
+                    error.Exception = ex;
+                    promise.Reject(error);
+                }
+                System.Diagnostics.Debug.WriteLine("RNNetPrinter - PrintRawData - END : " + text);
+            }
+
         }
 
         class EPSON
@@ -69,8 +144,8 @@ namespace RNThermalReceiptPrinter
                     return Print("\n");
                 }
 
-                // return Print(line.Replace("\r", string.Empty).Replace("\n", string.Empty) + "\n");
-                return Print("BONJOUR\n"); //line.Replace("\r", string.Empty).Replace("\n", string.Empty) + "\n");
+                return Print(line.Replace("\r", string.Empty).Replace("\n", string.Empty) + "\n");
+                // return Print("BONJOUR\n"); //line.Replace("\r", string.Empty).Replace("\n", string.Empty) + "\n");
             }
         }
 
@@ -100,21 +175,22 @@ namespace RNThermalReceiptPrinter
 
             // flag which allows an attempt to reconnect on timeout.
             private readonly bool _reconnectOnTimeout;
-            private readonly IPEndPoint _endPoint;
+            private IPEndPoint _endPoint;
             private Socket _socket;
             private NetworkStream _sockStream;
 
             protected bool IsConnected => !((_socket.Poll(1000, SelectMode.SelectRead) && (_socket.Available == 0)) || !_socket.Connected);
 
-            public NetworkPrinter(string ipAddress, int port, bool reconnectOnTimeout)
+
+            public NetworkPrinter(bool reconnectOnTimeout = true)
             {
+                System.Diagnostics.Debug.WriteLine("NetworkPrinter Constructor");
+
                 FlushTimer = new System.Timers.Timer(50);
                 FlushTimer.Elapsed += Flush;
                 FlushTimer.AutoReset = false;
 
                 _reconnectOnTimeout = reconnectOnTimeout;
-                _endPoint = new IPEndPoint(IPAddress.Parse(ipAddress), port);
-                Connect();
             }
 
             protected void Reconnect()
@@ -132,7 +208,7 @@ namespace RNThermalReceiptPrinter
                         _sockStream?.Close();
                         _socket?.Close();
 
-                        Connect();
+                        ConnectSocket();
                         System.Diagnostics.Debug.WriteLine("Reconnected!");
                         // StartMonitoring();
                     }
@@ -144,7 +220,18 @@ namespace RNThermalReceiptPrinter
                 }
             }
 
-            private void Connect()
+            public void Connect(string host, int port)
+            {
+                System.Diagnostics.Debug.WriteLine("START - NetworkPrinter Connect - " + host + ":" + port);
+
+                _endPoint = new IPEndPoint(IPAddress.Parse(host), port);
+
+                ConnectSocket();
+
+                System.Diagnostics.Debug.WriteLine("END - NetworkPrinter Connect");
+            }
+
+            private void ConnectSocket()
             {
                 _socket = new Socket(_endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
                 _socket.Connect(_endPoint);
@@ -192,6 +279,7 @@ namespace RNThermalReceiptPrinter
 
             ~NetworkPrinter()
             {
+                System.Diagnostics.Debug.WriteLine("NetworkPrinter Destructor");
                 Dispose(false);
             }
 

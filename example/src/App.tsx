@@ -40,7 +40,11 @@ export default function App() {
   const [devices, setDevices] = React.useState([]);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [selectedPrinter, setSelectedPrinter] = React.useState<SelectedPrinter>(
-    {}
+    {
+      host: '192.168.1.14',
+      port: '9100',
+      printerType: 'net',
+    }
   );
 
   React.useEffect(() => {
@@ -99,28 +103,19 @@ export default function App() {
   };
 
   const handlePrint = async () => {
-
-    if (Platform.OS === 'windows') {
-      try {
-        console.log('BEFORE - NativeModules.RNNetPrinter.connect');
-        NativeModules.RNNetPrinter.connect('192.168.1.14', 9100, (...res: any[]) => {
-          console.log('RES', res);
-        });
-        console.log('AFTER - NativeModules.RNNetPrinter.connect');
-      } catch (err) {
-        console.error(err);
-      }
-    } else {
-      try {
-        const Printer = printerList[selectedValue];
-        await Printer.printText("<C>sample text</C>\n");
-      } catch (err) {
-        console.warn(err);
-      }
-    }
-
-    
+    const Printer = printerList[selectedValue];
+    await Printer.printText("<C>C text</C>\n\n<D>D text</D>\n\n<B>B text<B>");
   };
+
+  const onInit = async () => {
+    const Printer = printerList[selectedValue];
+    await Printer.init();
+  }
+
+  const onDisconnect = async () => {
+    const Printer = printerList[selectedValue];
+    await Printer.closeConn();
+  }
 
   const handleChangePrinterType = async (type: keyof typeof printerList) => {
     setSelectedValue((prev) => {
@@ -143,6 +138,7 @@ export default function App() {
       <View style={styles.rowDirection}>
         <Text>Host: </Text>
         <TextInput
+          value={selectedPrinter.host}
           placeholder="192.168.100.19"
           onChangeText={handleChangeHostAndPort("host")}
         />
@@ -150,6 +146,7 @@ export default function App() {
       <View style={styles.rowDirection}>
         <Text>Port: </Text>
         <TextInput
+          value={selectedPrinter.port}
           placeholder="9100"
           onChangeText={handleChangeHostAndPort("port")}
         />
@@ -191,17 +188,29 @@ export default function App() {
         <Text>Select printer: </Text>
         {selectedValue === "net" ? _renderNet() : _renderOther()}
       </View>
-      <Button
-        // disabled={!selectedPrinter?.device_name}
-        title="Connect"
-        onPress={handleConnectSelectedPrinter}
-      />
-      <Button
-        // disabled={!selectedPrinter?.device_name}
-        title="Print sample"
-        onPress={handlePrint}
-      />
-      <Loader loading={loading} />
+
+      <View style={styles.buttons}>
+        <Button 
+          title="Init"
+          onPress={onInit}
+        />
+        <Button
+          // disabled={!selectedPrinter?.device_name}
+          title="Connect"
+          onPress={handleConnectSelectedPrinter}
+        />
+        <Button
+          // disabled={!selectedPrinter}
+          title="Print sample"
+          onPress={handlePrint}
+        />
+        <Button
+          // disabled={!selectedPrinter}
+          title="Disconnect"
+          onPress={onDisconnect}
+        />
+      </View>
+      {/* <Loader loading={loading} /> */}
     </View>
   );
 }
@@ -218,4 +227,8 @@ const styles = StyleSheet.create({
   rowDirection: {
     flexDirection: "row",
   },
+  buttons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  }
 });

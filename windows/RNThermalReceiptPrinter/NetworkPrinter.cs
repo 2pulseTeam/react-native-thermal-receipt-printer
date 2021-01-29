@@ -4,11 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
-
 using ESCPOS_NET.Utilities;
-using System;
-using System.Diagnostics;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
