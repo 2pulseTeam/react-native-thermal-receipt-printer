@@ -19,6 +19,9 @@ import {
 } from "react-native-thermal-receipt-printer";
 import Loader from "./Loader";
 
+import img from './olaii';
+const img2 = require('./olaii-logo-black-small.png');
+
 const printerList: Record<string, any> = {
   ble: BLEPrinter,
   net: NetPrinter,
@@ -117,6 +120,11 @@ export default function App() {
     await Printer.closeConn();
   }
 
+  const onPrintImage = async () => {
+    const Printer = printerList[selectedValue];
+    await Printer.printImage(img);
+  }
+
   const handleChangePrinterType = async (type: keyof typeof printerList) => {
     setSelectedValue((prev) => {
       printerList[prev].closeConn();
@@ -153,6 +161,7 @@ export default function App() {
       </View>
     </View>
   );
+  console.log('IMG', {img: img});
 
   const _renderOther = () => (
     // <Picker selectedValue={selectedPrinter} onValueChange={setSelectedPrinter}>
@@ -203,6 +212,11 @@ export default function App() {
           // disabled={!selectedPrinter}
           title="Print sample"
           onPress={handlePrint}
+        />
+        <Button
+          // disabled={!selectedPrinter}
+          title="Print image"
+          onPress={onPrintImage}
         />
         <Button
           // disabled={!selectedPrinter}

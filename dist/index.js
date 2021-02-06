@@ -89,10 +89,12 @@ var textPreprocessingIOS = function (text) {
         opts: options,
     };
 };
-// const imageToBuffer = async (imagePath: string, threshold: number = 60) => {
-//   const buffer = await EPToolkit.exchange_image(imagePath, threshold);
-//   return buffer.toString("base64");
-// };
+var imageToBuffer = function (base64Image, threshold) {
+    if (threshold === void 0) { threshold = 60; }
+    var buffer = EPToolkit.exchange_image(5, 256);
+    console.log('imageToBuffer', { buffer: buffer, base64Image: base64Image, threshold: threshold });
+    return buffer.toString("base64");
+};
 export var USBPrinter = {
     init: function () {
         return new Promise(function (resolve, reject) {
@@ -215,7 +217,9 @@ export var NetPrinter = {
             return RNNetPrinter.printRawData(processedText.text, processedText.opts, function (error) { return console.warn(error); });
         }
         else if (Platform.OS === 'windows') {
-            return RNNetPrinter.printRawData(textTo64Buffer(text, opts));
+            return RNNetPrinter.printRawData(textTo64Buffer(text, opts), function (error) {
+                console.log('printText error', { error: error });
+            });
         }
         else {
             return RNNetPrinter.printRawData(textTo64Buffer(text, opts), function (error) {
@@ -235,6 +239,17 @@ export var NetPrinter = {
             });
         }
     },
+    printImage: function (image) {
+        if (Platform.OS === 'windows') {
+            console.log('PrintImage', { buffer: imageToBuffer(image), image: image });
+            return RNNetPrinter.printRawData(imageToBuffer(image), function (error) {
+                console.log('printImage', { error: error });
+            });
+        }
+        else {
+            throw Error("PrintImage for ios and android is not implemented");
+        }
+    }
 };
 export var NetPrinterEventEmitter = new NativeEventEmitter(RNNetPrinter);
 export var RN_THERMAL_RECEIPT_PRINTER_EVENTS;

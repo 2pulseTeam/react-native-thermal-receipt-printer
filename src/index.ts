@@ -79,10 +79,11 @@ const textPreprocessingIOS = (text: string) => {
   };
 };
 
-// const imageToBuffer = async (imagePath: string, threshold: number = 60) => {
-//   const buffer = await EPToolkit.exchange_image(imagePath, threshold);
-//   return buffer.toString("base64");
-// };
+const imageToBuffer = (base64Image: string, threshold: number = 60) => {
+  const buffer = EPToolkit.exchange_image(1, 256);
+  console.log('imageToBuffer', {buffer, base64Image, threshold});
+  return buffer.toString("base64");
+};
 
 export const USBPrinter = {
   init: (): Promise<void> =>
@@ -252,7 +253,9 @@ export const NetPrinter = {
       );
     } 
     else if (Platform.OS === 'windows') {
-      return RNNetPrinter.printRawData(textTo64Buffer(text, opts));
+      return RNNetPrinter.printRawData(textTo64Buffer(text, opts), (error: Error) => {
+        console.log('printText error', {error});
+      });
     } 
     else {
       return RNNetPrinter.printRawData(textTo64Buffer(text, opts), (error: Error) =>
@@ -275,6 +278,18 @@ export const NetPrinter = {
       );
     }
   },
+
+  printImage: (image: string) => {
+    if (Platform.OS === 'windows') {
+      console.log('PrintImage', {buffer: imageToBuffer(image), image});
+      return RNNetPrinter.printRawData(imageToBuffer(image), (error: Error) => {
+        console.log('printImage', {error});
+      });
+    } else {
+      throw Error("PrintImage for ios and android is not implemented");
+    }
+
+  }
 };
 
 export const NetPrinterEventEmitter = new NativeEventEmitter(RNNetPrinter);

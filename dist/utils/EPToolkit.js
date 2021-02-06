@@ -9,6 +9,10 @@ var c_start_bytes = Buffer.from([27, 97, 1]);
 var c_end_bytes = Buffer.from([]); // [ 27, 97, 0 ];
 var r_start_bytes = Buffer.from([27, 97, 2]);
 var r_end_bytes = Buffer.from([]);
+var cr_bytes = Buffer.from([13]);
+var lf_bytes = Buffer.from([10]);
+var line_spacing_n180_bytes = Buffer.from([27, 51, 16]);
+var line_spacing_16_bytes = Buffer.from([27, 50]);
 var default_space_bytes = Buffer.from([27, 50]);
 var reset_bytes = Buffer.from([27, 97, 0, 29, 33, 0, 27, 50]);
 var m_start_bytes = Buffer.from([27, 33, 16, 28, 33, 8]);
@@ -26,6 +30,9 @@ var d_end_bytes = Buffer.from([27, 33, 0, 28, 33, 0]);
 var cut_bytes = Buffer.from([27, 105]);
 var beep_bytes = Buffer.from([27, 66, 3, 2]);
 var line_bytes = Buffer.from([10, 10, 10, 10, 10]);
+// const start_image_bytes = Buffer.from([27, 42]);
+// const set_line_spacing_9pin_bytes = Buffer.from([27, 43, 52, 56]);
+// const set_line_spacing_other_bytes = Buffer.from([27, 51, 50, 52]);
 var options_controller = {
     cut: cut_bytes,
     beep: beep_bytes,
@@ -96,43 +103,26 @@ export function exchange_text(text, options) {
     }
     return bytes.toBuffer();
 }
-// export async function exchange_image(
-//   imagePath: string,
-//   threshold: number
-// ): Promise<Buffer> {
-//   let bytes = new BufferHelper();
-//   try {
-//     // need to find other solution cause jimp is not working in RN
-//     const raw_image = await Jimp.read(imagePath);
-//     const img = raw_image.resize(250, 250).quality(60).greyscale();
-//     let hex;
-//     const nl = img.bitmap.width % 256;
-//     const nh = Math.round(img.bitmap.width / 256);
-//     // data
-//     const data = Buffer.from([0, 0, 0]);
-//     const line = Buffer.from([10]);
-//     for (let i = 0; i < Math.round(img.bitmap.height / 24) + 1; i++) {
-//       // ESC * m nL nH bitmap
-//       let header = Buffer.from([27, 42, 33, nl, nh]);
-//       bytes.concat(header);
-//       for (let j = 0; j < img.bitmap.width; j++) {
-//         data[0] = data[1] = data[2] = 0; // Clear to Zero.
-//         for (let k = 0; k < 24; k++) {
-//           if (i * 24 + k < img.bitmap.height) {
-//             // if within the BMP size
-//             hex = img.getPixelColor(j, i * 24 + k);
-//             if (Jimp.intToRGBA(hex).r <= threshold) {
-//               data[Math.round(k / 8)] += 128 >> k % 8;
-//             }
-//           }
-//         }
-//         const dit = Buffer.from([data[0], data[1], data[2]]);
-//         bytes.concat(dit);
-//       }
-//       bytes.concat(line);
-//     } // data
-//   } catch (error) {
-//     console.log(error);
-//   }
-//   return bytes.toBuffer();
-// }
+export function exchange_image(height, width) {
+    var m = 0;
+    var nl = width % 256;
+    var nh = Math.round(width / 256);
+    var bytes = new BufferHelper();
+    bytes.concat(init_printer_bytes);
+    bytes.concat(default_space_bytes);
+    bytes.concat(line_spacing_n180_bytes);
+    for (var lines = 0; lines < height; lines++) {
+        bytes.concat(Buffer.from([27, 42, m, nl, nh]));
+        for (var k = 0; k < (nl + nh * 256); k++) {
+            // bytes = Buffer.concat([bytes, Buffer.of(64)]);
+            bytes.concat(Buffer.of(128));
+        }
+        bytes.concat(cr_bytes);
+        bytes.concat(lf_bytes);
+    }
+    console.log('exchange_image', {
+        m: m, nl: nl, nh: nh, height: height, width: width, bytes: bytes
+    });
+    bytes.concat(line_spacing_16_bytes);
+    return bytes.toBuffer();
+}
