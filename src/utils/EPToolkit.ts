@@ -127,9 +127,13 @@ export function exchange_text(text: string, options: IOptions): Buffer {
 }
 
 export function exchange_image(
-  height: number,
   width: number,
+  height: number,
+  img: number[],
 ): Buffer {
+
+    // const source = Buffer.from(img);
+    // const height = Math.round(source.length / 256 * 4);
 
     const m = 0;
     const nl = width % 256;
@@ -139,20 +143,43 @@ export function exchange_image(
     bytes.concat(default_space_bytes);
     bytes.concat(line_spacing_n180_bytes);
 
-    for (let lines = 0; lines < height; lines++) {
+    const getPixel = (x: number, y: number) => {
+      // console.log('getPixel', {
+      //   x,y, index: (width * y) + x, value: img[((width * y) + x)] 
+      // })
+      return img[((width * y) + x)]
+    };
+
+    for (let j = 0; j < height / 8; j = j + 8) {
+
       bytes.concat(Buffer.from([27, 42, m, nl, nh]));
-  
-      for (let k = 0; k < (nl + nh * 256); k++) {
-          // bytes = Buffer.concat([bytes, Buffer.of(64)]);
+      let result;
+      for (let i = 0; i < width; i++) {
 
-          const offset = k % 8;
+        result =
+          getPixel(i, j) << 7 |
+          getPixel(i, j + 1) << 6 |
+          getPixel(i, j + 2) << 5 |
+          getPixel(i, j + 3) << 4 |
+          getPixel(i, j + 4) << 3 |
+          getPixel(i, j + 5) << 2 |
+          getPixel(i, j + 6) << 1 |
+          getPixel(i, j + 7);
 
-          bytes.concat(Buffer.of(0x01 << offset));
+        bytes.concat(Buffer.of(result));
+        
+          // const offset = k % 8;
+          // bytes.concat(0x80 >> offset);
       }
-  
+
       bytes.concat(cr_bytes);
       bytes.concat(lf_bytes);
     }
+
+    // bytes.concat(Buffer.from(result));
+
+    bytes.concat(cr_bytes);
+    bytes.concat(lf_bytes); 
 
     console.log('exchange_image', {
         m, nl, nh, height, width, bytes
@@ -160,3 +187,29 @@ export function exchange_image(
     bytes.concat(line_spacing_16_bytes);
     return bytes.toBuffer();
 }
+
+
+// const getPixel = (x: number, y: number) => source[((width * y) + x) * 4] > 0 ? 0 : 1;
+
+// const result = new Uint8Array((width * height) >> 3);
+
+// console.log('result', {result});
+
+// for (let y = 0; y < height; y++) {
+//   for (let x = 0; x < width; x = x + 8) {
+//     const i = (y * (width >> 3)) + (x >> 3);
+
+    
+//     result[i] =
+//                 getPixel(x + 0, y) << 7 |
+//                 getPixel(x + 1, y) << 6 |
+//                 getPixel(x + 2, y) << 5 |
+//                 getPixel(x + 3, y) << 4 |
+//                 getPixel(x + 4, y) << 3 |
+//                 getPixel(x + 5, y) << 2 |
+//                 getPixel(x + 6, y) << 1 |
+//                 getPixel(x + 7, y);
+  
+//     console.log('i', {x, y, i, res: result[i]});
+//   }
+// }

@@ -79,9 +79,9 @@ const textPreprocessingIOS = (text: string) => {
   };
 };
 
-const imageToBuffer = (base64Image: string, threshold: number = 60) => {
-  const buffer = EPToolkit.exchange_image(1, 256);
-  console.log('imageToBuffer', {buffer, base64Image, threshold});
+const imageToBuffer = (img: number[], threshold: number = 60) => {
+  const buffer = EPToolkit.exchange_image(256, 104, img);
+  console.log('imageToBuffer', {buffer, img, threshold});
   return buffer.toString("base64");
 };
 
@@ -279,9 +279,8 @@ export const NetPrinter = {
     }
   },
 
-  printImage: (image: string) => {
+  printImage: (image: number[]) => {
     if (Platform.OS === 'windows') {
-      console.log('PrintImage', {buffer: imageToBuffer(image), image});
       return RNNetPrinter.printRawData(imageToBuffer(image), (error: Error) => {
         console.log('printImage', {error});
       });

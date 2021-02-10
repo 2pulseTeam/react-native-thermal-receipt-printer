@@ -8,6 +8,7 @@ import {
   TextInput,
   Platform,
   NativeModules,
+  Image,
 } from "react-native";
 import {
   BLEPrinter,
@@ -20,7 +21,9 @@ import {
 import Loader from "./Loader";
 
 import img from './olaii';
-const img2 = require('./olaii-logo-black-small.png');
+// import {data as testImage} from './test-image';
+import {data as testImage} from './2pulse';
+import { Buffer } from "buffer";
 
 const printerList: Record<string, any> = {
   ble: BLEPrinter,
@@ -44,7 +47,7 @@ export default function App() {
   const [loading, setLoading] = React.useState<boolean>(false);
   const [selectedPrinter, setSelectedPrinter] = React.useState<SelectedPrinter>(
     {
-      host: '192.168.1.14',
+      host: '192.168.0.14',
       port: '9100',
       printerType: 'net',
     }
@@ -122,7 +125,7 @@ export default function App() {
 
   const onPrintImage = async () => {
     const Printer = printerList[selectedValue];
-    await Printer.printImage(img);
+    await Printer.printImage(testImage);
   }
 
   const handleChangePrinterType = async (type: keyof typeof printerList) => {
@@ -161,7 +164,6 @@ export default function App() {
       </View>
     </View>
   );
-  console.log('IMG', {img: img});
 
   const _renderOther = () => (
     // <Picker selectedValue={selectedPrinter} onValueChange={setSelectedPrinter}>
@@ -180,6 +182,7 @@ export default function App() {
     <View style={styles.container}>
       <View style={styles.section}>
         <Text>Select printer type: </Text>
+        <Image source={require('./olaii-logo-black-small.png')} />
         {/* <Picker
           selectedValue={selectedValue}
           onValueChange={handleChangePrinterType}

@@ -89,10 +89,10 @@ var textPreprocessingIOS = function (text) {
         opts: options,
     };
 };
-var imageToBuffer = function (base64Image, threshold) {
+var imageToBuffer = function (img, threshold) {
     if (threshold === void 0) { threshold = 60; }
-    var buffer = EPToolkit.exchange_image(5, 256);
-    console.log('imageToBuffer', { buffer: buffer, base64Image: base64Image, threshold: threshold });
+    var buffer = EPToolkit.exchange_image(256, 8, img);
+    console.log('imageToBuffer', { buffer: buffer, img: img, threshold: threshold });
     return buffer.toString("base64");
 };
 export var USBPrinter = {
@@ -241,7 +241,6 @@ export var NetPrinter = {
     },
     printImage: function (image) {
         if (Platform.OS === 'windows') {
-            console.log('PrintImage', { buffer: imageToBuffer(image), image: image });
             return RNNetPrinter.printRawData(imageToBuffer(image), function (error) {
                 console.log('printImage', { error: error });
             });
