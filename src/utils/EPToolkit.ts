@@ -19,8 +19,8 @@ const line_spacing_16_bytes = Buffer.from([27, 50]);
 
 const default_space_bytes = Buffer.from([27, 50]);
 
-const reset_bytes = Buffer.from([27, 97, 0, 29, 33, 0, 27, 50]);
-const m_start_bytes = Buffer.from([27, 33, 16, 28, 33, 8]);
+const reset_bytes = Buffer.from([27, 97, 0, 29, 33, 0, 27, 50]); // ESC a NUL GS ! NUL ESC 2
+const m_start_bytes = Buffer.from([27, 33, 16, 28, 33, 8]); // ESC ! DLE FS ! BS
 const m_end_bytes = Buffer.from([27, 33, 0, 28, 33, 0]);
 const b_start_bytes = Buffer.from([27, 33, 48, 28, 33, 12]);
 const b_end_bytes = Buffer.from([27, 33, 0, 28, 33, 0]);

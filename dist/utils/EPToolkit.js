@@ -14,8 +14,8 @@ var lf_bytes = Buffer.from([10]);
 var line_spacing_n180_bytes = Buffer.from([27, 51, 16]);
 var line_spacing_16_bytes = Buffer.from([27, 50]);
 var default_space_bytes = Buffer.from([27, 50]);
-var reset_bytes = Buffer.from([27, 97, 0, 29, 33, 0, 27, 50]);
-var m_start_bytes = Buffer.from([27, 33, 16, 28, 33, 8]);
+var reset_bytes = Buffer.from([27, 97, 0, 29, 33, 0, 27, 50]); // ESC a NUL GS ! NUL ESC 2
+var m_start_bytes = Buffer.from([27, 33, 16, 28, 33, 8]); // ESC ! DLE FS ! BS
 var m_end_bytes = Buffer.from([27, 33, 0, 28, 33, 0]);
 var b_start_bytes = Buffer.from([27, 33, 48, 28, 33, 12]);
 var b_end_bytes = Buffer.from([27, 33, 0, 28, 33, 0]);
@@ -119,7 +119,7 @@ export function exchange_image(width, height, img) {
         // })
         return img[((width * y) + x)];
     };
-    for (var j = 0; j < height / 8; j++) {
+    for (var j = 0; j < height / 8; j = j + 8) {
         bytes.concat(Buffer.from([27, 42, m, nl, nh]));
         var result = void 0;
         for (var i = 0; i < width; i++) {

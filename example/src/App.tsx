@@ -17,13 +17,10 @@ import {
   IUSBPrinter,
   IBLEPrinter,
   INetPrinter,
+  EscPosEncoder,
 } from "react-native-thermal-receipt-printer";
-import Loader from "./Loader";
 
-import img from './olaii';
-// import {data as testImage} from './test-image';
 import {data as testImage} from './2pulse';
-import { Buffer } from "buffer";
 
 const printerList: Record<string, any> = {
   ble: BLEPrinter,
@@ -47,7 +44,7 @@ export default function App() {
   const [loading, setLoading] = React.useState<boolean>(false);
   const [selectedPrinter, setSelectedPrinter] = React.useState<SelectedPrinter>(
     {
-      host: '192.168.0.14',
+      host: '192.168.1.10',
       port: '9100',
       printerType: 'net',
     }
@@ -109,8 +106,57 @@ export default function App() {
   };
 
   const handlePrint = async () => {
+
+    // return Promise.all(Object.keys(CodePage).map((encoding) => {
+    //   return printEncoding(encoding);
+    // }))
+
+    await printEncoding('WPC1252');
+
+  }
+
+  async function printEncoding(encoding: string): Promise<void> {
     const Printer = printerList[selectedValue];
-    await Printer.printText("<C>C text</C>\n\n<D>D text</D>\n\n<B>B text<B>\n\n\n\n");
+
+    const encoder = new EscPosEncoder(encoding);
+
+    return await Printer.printRawData(
+      encoder.initialize()
+        .image(256, 104, testImage)
+        .align('center')
+        .bold(true)
+        .text('Texte gras centré')
+        .bold(false)
+        .italic(true)
+        .text('Texte centré - Lorem Ipsum')
+        .italic(false)
+        .align('right')
+        .underline(2)
+        .text('Texte double underline')
+        .underline(1)
+        .text('Texte single underline')
+        .align('left')
+        .fontsize(1, 2)
+        .text('Texte taille (1, 2)')
+        .fontsize(2, 1)
+        .text('Texte taille (2, 1)')
+        .fontsize(2, 2)
+        .text('Texte taille (2, 2)')
+        .fontsize(4, 4)
+        .text('Texte (4, 4)')
+        .fontsize(6, 6)
+        .text('(6, 6)')
+        .fontsize(8, 8)
+        .text('(8, 8)')
+        .fontsize(1, 1)
+        .text('Charactères spéciaux : ')
+        .text('@#&é§è!çà$€£%ù')
+        .newline()
+        .newline()
+        .text('CODEPAGE: ' + encoding)
+        .cut('full')
+        .encode()
+    );
   };
 
   const onInit = async () => {
@@ -121,11 +167,6 @@ export default function App() {
   const onDisconnect = async () => {
     const Printer = printerList[selectedValue];
     await Printer.closeConn();
-  }
-
-  const onPrintImage = async () => {
-    const Printer = printerList[selectedValue];
-    await Printer.printImage(testImage);
   }
 
   const handleChangePrinterType = async (type: keyof typeof printerList) => {
@@ -215,11 +256,6 @@ export default function App() {
           // disabled={!selectedPrinter}
           title="Print sample"
           onPress={handlePrint}
-        />
-        <Button
-          // disabled={!selectedPrinter}
-          title="Print image"
-          onPress={onPrintImage}
         />
         <Button
           // disabled={!selectedPrinter}

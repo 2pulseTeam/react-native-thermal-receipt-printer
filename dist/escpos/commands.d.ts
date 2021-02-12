@@ -1,0 +1,23 @@
+export declare const EscPosCommands: {
+    INIT_PRINTER: number[];
+    LF: number[];
+    CR: number[];
+    BIT_IMAGE: number[];
+    BARCODE: number[];
+    PAGE_FORMAT: number[];
+    BOLD: number[];
+    SELECT_ITALIC: number[];
+    CANCEL_ITALIC: number[];
+    SELECT_DOUBLE_STRIKE: number[];
+    CANCEL_DOUBLE_STRIKE: number[];
+    SELECT_BOTTOM_MARGIN: number[];
+    CANCEL_BOTTOM_MARGIN: number[];
+    SELECT_RIGHT_MARGIN: number[];
+    LINE_SPACING_16: number[];
+    LINE_SPACING_N180: number[];
+    SELECT_JUSTIFICATION: number[];
+    CUT: number[];
+    SELECT_CHARACTER_SIZE: number[];
+    UNDERLINE: number[];
+    SELECT_CODE_PAGE: number[];
+};

@@ -1,14 +1,3 @@
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -46,55 +35,12 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 import { NativeModules, NativeEventEmitter, Platform } from "react-native";
-import * as EPToolkit from "./utils/EPToolkit";
+import { PrinterEncoder } from "./printer.encoder";
+import { CodePage, EscPosEncoder } from "./escpos/escpos.encoder";
 var RNUSBPrinter = NativeModules.RNUSBPrinter;
 var RNBLEPrinter = NativeModules.RNBLEPrinter;
 var RNNetPrinter = NativeModules.RNNetPrinter;
-var textTo64Buffer = function (text, opts) {
-    var defaultOptions = {
-        beep: false,
-        cut: false,
-        tailingLine: false,
-        encoding: "UTF8",
-    };
-    var options = __assign(__assign({}, defaultOptions), opts);
-    var buffer = EPToolkit.exchange_text(text, options);
-    return buffer.toString("base64");
-};
-var billTo64Buffer = function (text, opts) {
-    var defaultOptions = {
-        beep: true,
-        cut: true,
-        encoding: "UTF8",
-        tailingLine: true,
-    };
-    var options = __assign(__assign({}, defaultOptions), opts);
-    var buffer = EPToolkit.exchange_text(text, options);
-    return buffer.toString("base64");
-};
-var textPreprocessingIOS = function (text) {
-    var options = {
-        beep: true,
-        cut: true,
-    };
-    return {
-        text: text
-            .replace(/<\/?CB>/g, "")
-            .replace(/<\/?CM>/g, "")
-            .replace(/<\/?CD>/g, "")
-            .replace(/<\/?C>/g, "")
-            .replace(/<\/?D>/g, "")
-            .replace(/<\/?B>/g, "")
-            .replace(/<\/?M>/g, ""),
-        opts: options,
-    };
-};
-var imageToBuffer = function (img, threshold) {
-    if (threshold === void 0) { threshold = 60; }
-    var buffer = EPToolkit.exchange_image(256, 8, img);
-    console.log('imageToBuffer', { buffer: buffer, img: img, threshold: threshold });
-    return buffer.toString("base64");
-};
+export { EscPosEncoder, PrinterEncoder, CodePage };
 export var USBPrinter = {
     init: function () {
         return new Promise(function (resolve, reject) {
@@ -117,15 +63,8 @@ export var USBPrinter = {
             resolve();
         });
     },
-    printText: function (text, opts) {
-        if (opts === void 0) { opts = {}; }
-        return RNUSBPrinter.printRawData(textTo64Buffer(text, opts), function (error) {
-            return console.warn(error);
-        });
-    },
-    printBill: function (text, opts) {
-        if (opts === void 0) { opts = {}; }
-        return RNUSBPrinter.printRawData(billTo64Buffer(text, opts), function (error) {
+    printRawData: function (text) {
+        return RNUSBPrinter.printRawData(text, function (error) {
             return console.warn(error);
         });
     },
@@ -152,29 +91,10 @@ export var BLEPrinter = {
             resolve();
         });
     },
-    printText: function (text, opts) {
-        if (opts === void 0) { opts = {}; }
-        if (Platform.OS === "ios") {
-            var processedText = textPreprocessingIOS(text);
-            RNBLEPrinter.printRawData(processedText.text, processedText.opts, function (error) { return console.warn(error); });
-        }
-        else {
-            RNBLEPrinter.printRawData(textTo64Buffer(text, opts), function (error) {
-                return console.warn(error);
-            });
-        }
-    },
-    printBill: function (text, opts) {
-        if (opts === void 0) { opts = {}; }
-        if (Platform.OS === "ios") {
-            var processedText = textPreprocessingIOS(text);
-            RNBLEPrinter.printRawData(processedText.text, processedText.opts, function (error) { return console.warn(error); });
-        }
-        else {
-            RNBLEPrinter.printRawData(billTo64Buffer(text, opts), function (error) {
-                return console.warn(error);
-            });
-        }
+    printRawData: function (text) {
+        RNBLEPrinter.printRawData(text, function (error) {
+            return console.warn(error);
+        });
     },
 };
 export var NetPrinter = {
@@ -196,7 +116,6 @@ export var NetPrinter = {
     connectPrinter: function (host, port) { return __awaiter(void 0, void 0, void 0, function () {
         return __generator(this, function (_a) {
             if (Platform.OS === 'windows') {
-                console.log('RNThermalReceiptPrinter.connectPrinter - windows', { host: host, port: port });
                 return [2 /*return*/, RNNetPrinter.connectPrinter(host, port)];
             }
             return [2 /*return*/, new Promise(function (resolve, reject) {
@@ -210,45 +129,11 @@ export var NetPrinter = {
             resolve();
         });
     },
-    printText: function (text, opts) {
-        if (opts === void 0) { opts = {}; }
-        if (Platform.OS === "ios") {
-            var processedText = textPreprocessingIOS(text);
-            return RNNetPrinter.printRawData(processedText.text, processedText.opts, function (error) { return console.warn(error); });
-        }
-        else if (Platform.OS === 'windows') {
-            return RNNetPrinter.printRawData(textTo64Buffer(text, opts), function (error) {
-                console.log('printText error', { error: error });
-            });
-        }
-        else {
-            return RNNetPrinter.printRawData(textTo64Buffer(text, opts), function (error) {
-                return console.warn(error);
-            });
-        }
+    printRawData: function (text) {
+        return RNNetPrinter.printRawData(text, function (error) {
+            console.log('printRawData error', { error: error });
+        });
     },
-    printBill: function (text, opts) {
-        if (opts === void 0) { opts = {}; }
-        if (Platform.OS === "ios") {
-            var processedText = textPreprocessingIOS(text);
-            RNNetPrinter.printRawData(processedText.text, processedText.opts, function (error) { return console.warn(error); });
-        }
-        else {
-            RNNetPrinter.printRawData(billTo64Buffer(text, opts), function (error) {
-                return console.warn(error);
-            });
-        }
-    },
-    printImage: function (image) {
-        if (Platform.OS === 'windows') {
-            return RNNetPrinter.printRawData(imageToBuffer(image), function (error) {
-                console.log('printImage', { error: error });
-            });
-        }
-        else {
-            throw Error("PrintImage for ios and android is not implemented");
-        }
-    }
 };
 export var NetPrinterEventEmitter = new NativeEventEmitter(RNNetPrinter);
 export var RN_THERMAL_RECEIPT_PRINTER_EVENTS;
