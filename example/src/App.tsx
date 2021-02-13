@@ -107,11 +107,7 @@ export default function App() {
 
   const handlePrint = async () => {
 
-    // return Promise.all(Object.keys(CodePage).map((encoding) => {
-    //   return printEncoding(encoding);
-    // }))
-
-    await printEncoding('WPC1252');
+    await printEncoding('1252');
 
   }
 
@@ -123,13 +119,12 @@ export default function App() {
     return await Printer.printRawData(
       encoder.initialize()
         .image(256, 104, testImage)
+        .drawline()
         .align('center')
         .bold(true)
         .text('Texte gras centré')
         .bold(false)
-        .italic(true)
         .text('Texte centré - Lorem Ipsum')
-        .italic(false)
         .align('right')
         .underline(2)
         .text('Texte double underline')
@@ -148,11 +143,12 @@ export default function App() {
         .text('(6, 6)')
         .fontsize(8, 8)
         .text('(8, 8)')
+        .drawline()
         .fontsize(1, 1)
         .text('Charactères spéciaux : ')
         .text('@#&é§è!çà$€£%ù')
-        .newline()
-        .newline()
+        .drawline()
+        .newline(2)
         .text('CODEPAGE: ' + encoding)
         .cut('full')
         .encode()

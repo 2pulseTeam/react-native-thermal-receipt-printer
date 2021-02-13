@@ -11,15 +11,9 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __spreadArrays = (this && this.__spreadArrays) || function () {
-    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
-    for (var r = Array(s), k = 0, i = 0; i < il; i++)
-        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
-            r[k] = a[j];
-    return r;
-};
 import { PrinterEncoder } from "../printer.encoder";
 import { EscPosCommands } from "./commands";
+import * as iconv from "iconv-lite";
 // n Character Type
 // 0PC437 (USA: Standard Europe)
 // 1Katakana
@@ -39,8 +33,10 @@ export var CodePage = {
     PC863: 0x04,
     PC865: 0x05,
     WPC1252: 0x10,
+    1252: 0x10,
     PC866: 0x11,
     PC852: 0x12,
+    852: 0x12,
     PC858: 0x13,
 };
 var EscPosEncoder = /** @class */ (function (_super) {
@@ -52,28 +48,36 @@ var EscPosEncoder = /** @class */ (function (_super) {
         var codepage = CodePage[this._encoding];
         if (!codepage)
             throw new Error('EscPosEncoder.initialize - codepage is unknown : ' + this._encoding);
-        this._queue(__spreadArrays(EscPosCommands.INIT_PRINTER, EscPosCommands.SELECT_CODE_PAGE, [
+        this._queue([
+            EscPosCommands.INIT_PRINTER,
+            EscPosCommands.SELECT_CODE_PAGE,
             codepage
-        ]));
+        ]);
         return this;
     };
-    EscPosEncoder.prototype.newline = function () {
-        this._queue(__spreadArrays(EscPosCommands.CR, EscPosCommands.LF));
+    EscPosEncoder.prototype.newline = function (value) {
+        if (value === void 0) { value = 1; }
+        if (value < 1)
+            throw new Error('EscPosEncoder.newline - value is < 1');
+        var toQueue = [];
+        for (var index = 0; index < value; index++) {
+            toQueue.push(EscPosCommands.CR, EscPosCommands.LF);
+        }
+        this._queue(toQueue);
         return this;
     };
     EscPosEncoder.prototype.text = function (value) {
-        this._queue(Array.from(value).map(function (char) { return char.charCodeAt(0); }));
+        var _this = this;
+        console.log('Text queueing', Array.from(value).map(function (char) { return iconv.encode(char, _this._encoding); }));
+        this._queue(Array.from(value).map(function (char) { return iconv.encode(char, _this._encoding); }));
         this.newline();
         return this;
     };
-    EscPosEncoder.prototype.italic = function (value) {
-        this._queue(value ? EscPosCommands.SELECT_ITALIC : EscPosCommands.CANCEL_ITALIC);
-        return this;
-    };
     EscPosEncoder.prototype.bold = function (value) {
-        this._queue(__spreadArrays(EscPosCommands.BOLD, [
+        this._queue([
+            EscPosCommands.BOLD,
             value ? 0x01 : 0x00
-        ]));
+        ]);
         return this;
     };
     EscPosEncoder.prototype.align = function (value) {
@@ -86,7 +90,7 @@ var EscPosEncoder = /** @class */ (function (_super) {
                 arg = 0x32;
                 break;
         }
-        this._queue(__spreadArrays(EscPosCommands.SELECT_JUSTIFICATION, [arg]));
+        this._queue([EscPosCommands.SELECT_JUSTIFICATION, arg]);
         return this;
     };
     EscPosEncoder.prototype.image = function (width, height, img) {
@@ -97,12 +101,13 @@ var EscPosEncoder = /** @class */ (function (_super) {
         var m = 0;
         var nl = width % 256;
         var nh = Math.round(width / 256);
-        this._queue(__spreadArrays(EscPosCommands.LINE_SPACING_N180, [
+        this._queue([
+            EscPosCommands.LINE_SPACING_N180,
             0x10,
-        ]));
+        ]);
         var getPixel = function (x, y) { return img[((width * y) + x)]; };
         for (var j = 0; j < height; j = j + 8) {
-            this._queue(__spreadArrays(EscPosCommands.BIT_IMAGE, [m, nl, nh]));
+            this._queue([EscPosCommands.BIT_IMAGE, m, nl, nh]);
             var result = void 0;
             for (var i = 0; i < width; i++) {
                 result =
@@ -116,17 +121,26 @@ var EscPosEncoder = /** @class */ (function (_super) {
                         getPixel(i, j + 7);
                 this._queue([result]);
             }
-            this._queue(__spreadArrays(EscPosCommands.CR, EscPosCommands.LF));
+            this.newline();
         }
-        this._queue(__spreadArrays(EscPosCommands.CR, EscPosCommands.LF));
+        this.newline();
+        return this;
+    };
+    EscPosEncoder.prototype.drawline = function () {
+        this._queue([EscPosCommands.BIT_IMAGE, 0, 0, 1]);
+        for (var index = 0; index < 256; index++) {
+            this._queue([0x10]);
+        }
+        this.newline();
         return this;
     };
     EscPosEncoder.prototype.cut = function (value) {
         this.newline();
-        this._queue(__spreadArrays(EscPosCommands.CUT, [
+        this._queue([
+            EscPosCommands.CUT,
             value === 'partial' ? 0x42 : 0x41,
             0x10,
-        ]));
+        ]);
         return this;
     };
     EscPosEncoder.prototype.fontsize = function (width, height) {
@@ -137,9 +151,10 @@ var EscPosEncoder = /** @class */ (function (_super) {
             throw new Error('EscPosEncoder.fontsize : height is outofbounds [1, 8]');
         }
         var arg = (width - 1 << 4) + (height - 1);
-        this._queue(__spreadArrays(EscPosCommands.SELECT_CHARACTER_SIZE, [
+        this._queue([
+            EscPosCommands.SELECT_CHARACTER_SIZE,
             arg,
-        ]));
+        ]);
         return this;
     };
     ;
@@ -156,7 +171,7 @@ var EscPosEncoder = /** @class */ (function (_super) {
             case 2:
                 arg = 0x32;
         }
-        this._queue(__spreadArrays(EscPosCommands.UNDERLINE, [arg]));
+        this._queue([EscPosCommands.UNDERLINE, arg]);
         return this;
     };
     ;

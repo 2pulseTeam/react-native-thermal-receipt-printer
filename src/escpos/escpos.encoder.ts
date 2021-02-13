@@ -1,6 +1,6 @@
 import { PrinterEncoder } from "../printer.encoder";
 import { EscPosCommands } from "./commands";
-
+import * as iconv from "iconv-lite";
 
     // n Character Type
     // 0PC437 (USA: Standard Europe)
@@ -22,8 +22,10 @@ export const CodePage = {
   PC863: 0x04,
   PC865: 0x05,
   WPC1252: 0x10,
+  1252: 0x10, 
   PC866: 0x11,
   PC852: 0x12,
+  852: 0x12,
   PC858: 0x13,
 }
 
@@ -38,32 +40,36 @@ export class EscPosEncoder extends PrinterEncoder {
       throw new Error('EscPosEncoder.initialize - codepage is unknown : ' + this._encoding);
 
     this._queue([
-      ...EscPosCommands.INIT_PRINTER,
-      ...EscPosCommands.SELECT_CODE_PAGE,
+      EscPosCommands.INIT_PRINTER,
+      EscPosCommands.SELECT_CODE_PAGE,
       codepage
     ]);
     return this;
   }
 
-  newline(): PrinterEncoder {
-    this._queue([...EscPosCommands.CR, ...EscPosCommands.LF]);
+  newline(value: number = 1): PrinterEncoder {
+
+    if (value < 1) throw new Error('EscPosEncoder.newline - value is < 1');
+
+    const toQueue = [];
+    for (let index = 0; index < value; index++) {
+      toQueue.push(EscPosCommands.CR, EscPosCommands.LF);
+    }
+
+    this._queue(toQueue);
     return this;
   }
 
   text(value: string): PrinterEncoder {
-    this._queue(Array.from(value).map(char => char.charCodeAt(0)));
+    console.log('Text queueing', Array.from(value).map(char => iconv.encode(char, this._encoding)));
+    this._queue(Array.from(value).map(char => iconv.encode(char, this._encoding)));
     this.newline();
-    return this;
-  }
-
-  italic(value: boolean): PrinterEncoder {
-    this._queue(value ? EscPosCommands.SELECT_ITALIC : EscPosCommands.CANCEL_ITALIC);
     return this;
   }
 
   bold(value: boolean): PrinterEncoder {
     this._queue([
-      ...EscPosCommands.BOLD, 
+      EscPosCommands.BOLD, 
       value ? 0x01 : 0x00
     ]);
     return this;
@@ -82,7 +88,7 @@ export class EscPosEncoder extends PrinterEncoder {
         break;
     }
 
-    this._queue([...EscPosCommands.SELECT_JUSTIFICATION, arg]);
+    this._queue([EscPosCommands.SELECT_JUSTIFICATION, arg]);
     return this;
   }
 
@@ -96,7 +102,7 @@ export class EscPosEncoder extends PrinterEncoder {
     const nh = Math.round(width / 256);
 
     this._queue([
-      ...EscPosCommands.LINE_SPACING_N180,
+      EscPosCommands.LINE_SPACING_N180,
       0x10,
     ]);
 
@@ -104,7 +110,7 @@ export class EscPosEncoder extends PrinterEncoder {
 
     for (let j = 0; j < height; j = j + 8) {
 
-      this._queue([...EscPosCommands.BIT_IMAGE, m, nl, nh]);
+      this._queue([EscPosCommands.BIT_IMAGE, m, nl, nh]);
 
       let result: number;
       for (let i = 0; i < width; i++) {
@@ -123,10 +129,23 @@ export class EscPosEncoder extends PrinterEncoder {
 
       }
 
-      this._queue([...EscPosCommands.CR, ...EscPosCommands.LF]);
+      this.newline();
     }
 
-    this._queue([...EscPosCommands.CR, ...EscPosCommands.LF]);
+    this.newline();
+
+    return this;
+  }
+
+  drawline(): PrinterEncoder {
+
+    this._queue([EscPosCommands.BIT_IMAGE, 0, 0, 1]);
+
+    for (let index = 0; index < 256; index++) {
+      this._queue([0x10])
+    }
+
+    this.newline();
 
     return this;
   }
@@ -134,7 +153,7 @@ export class EscPosEncoder extends PrinterEncoder {
   cut(value: "full" | "partial"): PrinterEncoder {
     this.newline();
     this._queue([
-      ...EscPosCommands.CUT, 
+      EscPosCommands.CUT, 
       value === 'partial' ? 0x42 : 0x41,
       0x10,
     ]);
@@ -154,7 +173,7 @@ export class EscPosEncoder extends PrinterEncoder {
     let arg = (width - 1 << 4) + (height - 1);
 
     this._queue([
-      ...EscPosCommands.SELECT_CHARACTER_SIZE,
+      EscPosCommands.SELECT_CHARACTER_SIZE,
       arg,
     ]);
     return this;
@@ -174,7 +193,7 @@ export class EscPosEncoder extends PrinterEncoder {
         arg = 0x32;
     }
 
-    this._queue([...EscPosCommands.UNDERLINE, arg]);
+    this._queue([EscPosCommands.UNDERLINE, arg]);
 
     return this;
   };

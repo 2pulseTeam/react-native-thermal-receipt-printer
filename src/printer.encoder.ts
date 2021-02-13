@@ -2,7 +2,7 @@ import { Buffer } from 'buffer';
 
 export abstract class PrinterEncoder {
   
-  _buffer: number[];
+  _buffers: Buffer[];
   _encoding: string;
 
   constructor(encoding: string) {
@@ -11,16 +11,21 @@ export abstract class PrinterEncoder {
   }
 
   private _reset(): void {
-    this._buffer = [];
+    this._buffers = [];
   }
 
-  protected _queue(values: number[]): void {
-    this._buffer.push(...values);
+  protected _queue(values: Array<Buffer | number>): void {
+    this._buffers.push(
+      ...values.map(value => typeof value === 'number' 
+        ? Buffer.of(value) 
+        : value
+      )
+    );
   }
 
   encode(): string {
 
-    const result = Buffer.from(this._buffer);
+    const result = Buffer.concat(this._buffers);
 
     this._reset();
 
@@ -29,11 +34,9 @@ export abstract class PrinterEncoder {
 
   abstract initialize(): PrinterEncoder;
   
-  abstract newline(): PrinterEncoder;
+  abstract newline(value?: number): PrinterEncoder;
 
   abstract text(value: string): PrinterEncoder;
-
-  abstract italic(value: boolean): PrinterEncoder;
 
   abstract bold(value: boolean): PrinterEncoder;
 
@@ -46,5 +49,7 @@ export abstract class PrinterEncoder {
   abstract fontsize(width: number, height: number): PrinterEncoder;
 
   abstract underline(value: 0 | 1 | 2): PrinterEncoder;
+
+  abstract drawline(): PrinterEncoder;
 
 }

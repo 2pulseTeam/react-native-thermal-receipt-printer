@@ -5,14 +5,16 @@ var PrinterEncoder = /** @class */ (function () {
         this._encoding = encoding;
     }
     PrinterEncoder.prototype._reset = function () {
-        this._buffer = [];
+        this._buffers = [];
     };
     PrinterEncoder.prototype._queue = function (values) {
         var _a;
-        (_a = this._buffer).push.apply(_a, values);
+        (_a = this._buffers).push.apply(_a, values.map(function (value) { return typeof value === 'number'
+            ? Buffer.of(value)
+            : value; }));
     };
     PrinterEncoder.prototype.encode = function () {
-        var result = Buffer.from(this._buffer);
+        var result = Buffer.concat(this._buffers);
         this._reset();
         return result.toString('base64');
     };
