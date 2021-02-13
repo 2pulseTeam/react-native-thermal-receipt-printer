@@ -1,7 +1,7 @@
 import { NativeEventEmitter } from "react-native";
-import { PrinterEncoder } from "./printer.encoder";
+import { PrinterEncoder, TabData } from "./printer.encoder";
 import { CodePage, EscPosEncoder } from "./escpos/escpos.encoder";
-export { EscPosEncoder, PrinterEncoder, CodePage };
+export { EscPosEncoder, PrinterEncoder, CodePage, TabData };
 export interface PrinterOptions {
     beep?: boolean;
     cut?: boolean;

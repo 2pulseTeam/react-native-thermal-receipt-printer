@@ -116,37 +116,66 @@ export default function App() {
 
     const encoder = new EscPosEncoder(encoding);
 
+    const tableData = [{
+      name: 'Mon menu végétarien',
+      price: '9.00 €',
+    }, {
+      name: 'Mon entrée végétarienne',
+      price: '19.00 €',
+    }, {
+      name: 'Mon menu pas trop végé mais bon',
+      price: '189.00 €',
+    }, {
+      name: 'J\'ai faim.',
+      price: '9.00 €',
+    }];
+
+    const tableHeaders = [{
+      key: 'name',
+      label: 'Nom',
+      align: 'left'
+    }, {
+      key: 'price',
+      label: 'Prix',
+      align: 'right'
+    }]
+
     return await Printer.printRawData(
       encoder.initialize()
         .image(256, 104, testImage)
         .drawline()
         .align('center')
         .bold(true)
-        .text('Texte gras centré')
+        .textline('Texte gras centré')
         .bold(false)
-        .text('Texte centré - Lorem Ipsum')
+        .textline('Texte centré - Lorem Ipsum')
         .align('right')
         .underline(2)
-        .text('Texte double underline')
+        .textline('Texte double underline')
         .underline(1)
-        .text('Texte single underline')
+        .textline('Texte single underline')
         .align('left')
         .fontsize(1, 2)
-        .text('Texte taille (1, 2)')
+        .textline('Texte taille (1, 2)')
         .fontsize(2, 1)
-        .text('Texte taille (2, 1)')
+        .textline('Texte taille (2, 1)')
         .fontsize(2, 2)
-        .text('Texte taille (2, 2)')
+        .textline('Texte taille (2, 2)')
         .fontsize(4, 4)
-        .text('Texte (4, 4)')
+        .textline('Texte (4, 4)')
         .fontsize(6, 6)
-        .text('(6, 6)')
+        .textline('(6, 6)')
         .fontsize(8, 8)
-        .text('(8, 8)')
+        .textline('(8, 8)')
         .drawline()
         .fontsize(1, 1)
-        .text('Charactères spéciaux : ')
-        .text('@#&é§è!çà$€£%ù')
+        .textline('Charactères spéciaux : ')
+        .textline('@#&é§è!çà$€£%ù')
+        .drawline()
+        .textline('Le "s" doit etre sur une nouvelle ligne : ')
+        .textline('abcdefghijklmnopqrstuvwxyz0000abcdefghijklmnopqrs')
+        .drawline()
+        .table(tableHeaders, tableData)
         .drawline()
         .newline(2)
         .text('CODEPAGE: ' + encoding)

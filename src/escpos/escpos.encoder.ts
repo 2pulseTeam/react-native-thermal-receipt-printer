@@ -1,4 +1,4 @@
-import { PrinterEncoder } from "../printer.encoder";
+import { PrinterEncoder, TabData, TabHeader } from "../printer.encoder";
 import { EscPosCommands } from "./commands";
 import * as iconv from "iconv-lite";
 
@@ -61,9 +61,71 @@ export class EscPosEncoder extends PrinterEncoder {
   }
 
   text(value: string): PrinterEncoder {
-    console.log('Text queueing', Array.from(value).map(char => iconv.encode(char, this._encoding)));
     this._queue(Array.from(value).map(char => iconv.encode(char, this._encoding)));
+    return this;
+  }
+
+  textline(value: string): PrinterEncoder {
+    this.text(value);
     this.newline();
+    return this;
+  }
+
+  
+  table(headers: TabHeader[], values: TabData[]): PrinterEncoder {
+
+    const initialWidth = headers.reduce((acc, header) => {
+      acc[header.key] = 0;
+      return acc;
+    }, {} as {
+      [key: string]: number
+    });
+
+    // get each column size = max(values[header])
+    const columnsWidth = values.reduce((acc, value) => {
+      headers.forEach(header => {
+        if (acc[header.key] <= value[header.key].length) {
+          acc[header.key] = value[header.key].length + 1; // Force 1 character margin
+        }
+      });
+
+      return acc;
+    }, initialWidth);
+
+    const totalWidth = Object.keys(columnsWidth).reduce((acc, key) => {
+      acc += columnsWidth[key];
+      return acc;
+    }, 0);
+
+    if (totalWidth < 48) {
+      const lastKey = Object.keys(columnsWidth).pop()!;
+      columnsWidth[lastKey] += 48 - totalWidth;
+    }
+    
+    values.forEach(value => {
+      headers.forEach(header => {
+        this.text(header.align === 'left' 
+          ? value[header.key].padEnd(columnsWidth[header.key])
+          : value[header.key].padStart(columnsWidth[header.key]) 
+        )
+      });
+
+      this.newline();
+    });
+
+    return this;
+  }
+
+
+  position(value: number): PrinterEncoder {
+
+    const nl = value % 256;
+    const nh = Math.round(value / 256);
+
+    if (nh > 255) throw new Error('EscPosEncoder.position - value / 256 must be <= 255');
+    if (nl > 255) throw new Error('EscPosEncoder.position - value % 256 must be <= 255');
+
+    this._queue([EscPosCommands.ABSOLUTE_PRINT_POSITION, nl, nh]);
     return this;
   }
 

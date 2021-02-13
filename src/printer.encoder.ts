@@ -38,6 +38,12 @@ export abstract class PrinterEncoder {
 
   abstract text(value: string): PrinterEncoder;
 
+  abstract textline(value: string): PrinterEncoder;
+  
+  abstract position(value: number): PrinterEncoder;
+
+  abstract table(headers: TabHeader[], values: TabData[]): PrinterEncoder;
+
   abstract bold(value: boolean): PrinterEncoder;
 
   abstract align(value: 'left' | 'center' | 'right'): PrinterEncoder;
@@ -52,4 +58,14 @@ export abstract class PrinterEncoder {
 
   abstract drawline(): PrinterEncoder;
 
+}
+
+export interface TabData {
+  [key: string]: string;
+}
+
+export interface TabHeader {
+  align: string; //'left' | 'right';
+  label: string;
+  key: string;
 }

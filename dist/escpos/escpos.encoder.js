@@ -68,9 +68,56 @@ var EscPosEncoder = /** @class */ (function (_super) {
     };
     EscPosEncoder.prototype.text = function (value) {
         var _this = this;
-        console.log('Text queueing', Array.from(value).map(function (char) { return iconv.encode(char, _this._encoding); }));
         this._queue(Array.from(value).map(function (char) { return iconv.encode(char, _this._encoding); }));
+        return this;
+    };
+    EscPosEncoder.prototype.textline = function (value) {
+        this.text(value);
         this.newline();
+        return this;
+    };
+    EscPosEncoder.prototype.table = function (headers, values) {
+        var _this = this;
+        var initialWidth = headers.reduce(function (acc, header) {
+            acc[header.key] = 0;
+            return acc;
+        }, {});
+        // get each column size = max(values[header])
+        var columnsWidth = values.reduce(function (acc, value) {
+            headers.forEach(function (header) {
+                if (acc[header.key] <= value[header.key].length) {
+                    acc[header.key] = value[header.key].length + 1; // Force 1 character margin
+                }
+            });
+            return acc;
+        }, initialWidth);
+        var totalWidth = Object.keys(columnsWidth).reduce(function (acc, key) {
+            acc += columnsWidth[key];
+            return acc;
+        }, 0);
+        if (totalWidth < 48) {
+            var lastKey = Object.keys(columnsWidth).pop();
+            columnsWidth[lastKey] += 48 - totalWidth;
+        }
+        // padEnd each value to match column size
+        values.forEach(function (value) {
+            headers.forEach(function (header) {
+                _this.text(header.align === 'left'
+                    ? value[header.key].padEnd(columnsWidth[header.key])
+                    : value[header.key].padStart(columnsWidth[header.key]));
+            });
+            _this.newline();
+        });
+        return this;
+    };
+    EscPosEncoder.prototype.position = function (value) {
+        var nl = value % 256;
+        var nh = Math.round(value / 256);
+        if (nh > 255)
+            throw new Error('EscPosEncoder.position - value / 256 must be <= 255');
+        if (nl > 255)
+            throw new Error('EscPosEncoder.position - value % 256 must be <= 255');
+        this._queue([EscPosCommands.ABSOLUTE_PRINT_POSITION, nl, nh]);
         return this;
     };
     EscPosEncoder.prototype.bold = function (value) {

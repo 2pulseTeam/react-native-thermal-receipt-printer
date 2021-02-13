@@ -22,4 +22,6 @@ export var EscPosCommands = {
     UNDERLINE: Buffer.from([0x1b, 0x7e]),
     // ESC ( t
     SELECT_CODE_PAGE: Buffer.from([0x1b, 0x74]),
+    ABSOLUTE_PRINT_POSITION: Buffer.from([0x1b, 0x24]),
+    TAB_POSITION: Buffer.from([0x1b, 0x24]),
 };

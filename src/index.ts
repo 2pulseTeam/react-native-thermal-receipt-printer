@@ -1,12 +1,12 @@
 import { NativeModules, NativeEventEmitter, Platform } from "react-native";
-import { PrinterEncoder } from "./printer.encoder";
+import { PrinterEncoder, TabData } from "./printer.encoder";
 import { CodePage, EscPosEncoder } from "./escpos/escpos.encoder";
 
 const RNUSBPrinter = NativeModules.RNUSBPrinter;
 const RNBLEPrinter = NativeModules.RNBLEPrinter;
 const RNNetPrinter = NativeModules.RNNetPrinter;
 
-export {EscPosEncoder, PrinterEncoder, CodePage};
+export {EscPosEncoder, PrinterEncoder, CodePage, TabData};
 
 export interface PrinterOptions {
   beep?: boolean;

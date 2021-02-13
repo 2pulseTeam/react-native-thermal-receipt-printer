@@ -37,5 +37,9 @@ export const EscPosCommands = {
   UNDERLINE: Buffer.from([0x1b, 0x7e]), // ESC -
 
   // ESC ( t
-  SELECT_CODE_PAGE: Buffer.from([0x1b, 0x74]), // ESC t 
+  SELECT_CODE_PAGE: Buffer.from([0x1b, 0x74]), // ESC t
+
+  ABSOLUTE_PRINT_POSITION: Buffer.from([0x1b, 0x24]), // ESC $
+
+  TAB_POSITION: Buffer.from([0x1b, 0x24]), // ESC $
 }

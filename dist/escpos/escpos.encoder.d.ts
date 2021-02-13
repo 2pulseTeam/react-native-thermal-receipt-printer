@@ -1,4 +1,4 @@
-import { PrinterEncoder } from "../printer.encoder";
+import { PrinterEncoder, TabData, TabHeader } from "../printer.encoder";
 export declare const CodePage: {
     PC437: number;
     PC850: number;
@@ -16,6 +16,9 @@ export declare class EscPosEncoder extends PrinterEncoder {
     initialize(): PrinterEncoder;
     newline(value?: number): PrinterEncoder;
     text(value: string): PrinterEncoder;
+    textline(value: string): PrinterEncoder;
+    table(headers: TabHeader[], values: TabData[]): PrinterEncoder;
+    position(value: number): PrinterEncoder;
     bold(value: boolean): PrinterEncoder;
     align(value: "left" | "center" | "right"): PrinterEncoder;
     image(width: number, height: number, img: number[]): PrinterEncoder;

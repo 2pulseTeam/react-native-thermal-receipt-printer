@@ -21,4 +21,6 @@ export declare const EscPosCommands: {
     SELECT_CHARACTER_SIZE: Buffer;
     UNDERLINE: Buffer;
     SELECT_CODE_PAGE: Buffer;
+    ABSOLUTE_PRINT_POSITION: Buffer;
+    TAB_POSITION: Buffer;
 };
