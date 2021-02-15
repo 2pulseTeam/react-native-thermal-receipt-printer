@@ -6,4 +6,5 @@ declare type IOptions = {
     encoding: string;
 };
 export declare function exchange_text(text: string, options: IOptions): Buffer;
+export declare function exchange_image(width: number, height: number, img: number[]): Buffer;
 export {};

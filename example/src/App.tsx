@@ -8,6 +8,7 @@ import {
   TextInput,
   Platform,
   NativeModules,
+  Image,
 } from "react-native";
 import {
   BLEPrinter,
@@ -16,8 +17,10 @@ import {
   IUSBPrinter,
   IBLEPrinter,
   INetPrinter,
+  EscPosEncoder,
 } from "react-native-thermal-receipt-printer";
-import Loader from "./Loader";
+
+import {data as testImage} from './2pulse';
 
 const printerList: Record<string, any> = {
   ble: BLEPrinter,
@@ -34,29 +37,17 @@ export default function App() {
 
   console.log('STARTING APP ...');
 
-  React.useEffect(() => {
-    if (Platform.OS === 'windows') {
-      console.log('WINDOWS ! ');
-      NativeModules.FancyMath.add(
-        /* arg a */ NativeModules.FancyMath.Pi,
-        /* arg b */ NativeModules.FancyMath.E,
-        /* callback */ function (result: any) {
-          Alert.alert(
-            'FancyMath',
-            `FancyMath says ${NativeModules.FancyMath.Pi} + ${NativeModules.FancyMath.E} = ${result}`,
-            [{ text: 'OK' }],
-            {cancelable: false});
-        });
-    }
-  }, []);
-
   const [selectedValue, setSelectedValue] = React.useState<
     keyof typeof printerList
   >("net");
   const [devices, setDevices] = React.useState([]);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [selectedPrinter, setSelectedPrinter] = React.useState<SelectedPrinter>(
-    {}
+    {
+      host: '192.168.1.10',
+      port: '9100',
+      printerType: 'net',
+    }
   );
 
   React.useEffect(() => {
@@ -116,27 +107,92 @@ export default function App() {
 
   const handlePrint = async () => {
 
-    if (Platform.OS === 'windows') {
-      try {
-        console.log('BEFORE - NativeModules.RNNetPrinter.connect');
-        NativeModules.RNNetPrinter.connect('192.168.1.14', 9100, (...res: any[]) => {
-          console.log('RES', res);
-        });
-        console.log('AFTER - NativeModules.RNNetPrinter.connect');
-      } catch (err) {
-        console.error(err);
-      }
-    } else {
-      try {
-        const Printer = printerList[selectedValue];
-        await Printer.printText("<C>sample text</C>\n");
-      } catch (err) {
-        console.warn(err);
-      }
-    }
+    await printEncoding('1252');
 
-    
+  }
+
+  async function printEncoding(encoding: string): Promise<void> {
+    const Printer = printerList[selectedValue];
+
+    const encoder = new EscPosEncoder(encoding);
+
+    const tableData = [{
+      name: 'Mon menu végétarien',
+      price: '9.00 €',
+    }, {
+      name: 'Mon entrée végétarienne',
+      price: '19.00 €',
+    }, {
+      name: 'Mon menu pas trop végé mais bon',
+      price: '189.00 €',
+    }, {
+      name: 'J\'ai faim.',
+      price: '9.00 €',
+    }];
+
+    const tableHeaders = [{
+      key: 'name',
+      label: 'Nom',
+      align: 'left'
+    }, {
+      key: 'price',
+      label: 'Prix',
+      align: 'right'
+    }]
+
+    return await Printer.printRawData(
+      encoder.initialize()
+        .image(256, 104, testImage)
+        .drawline()
+        .align('center')
+        .bold(true)
+        .textline('Texte gras centré')
+        .bold(false)
+        .textline('Texte centré - Lorem Ipsum')
+        .align('right')
+        .underline(2)
+        .textline('Texte double underline')
+        .underline(1)
+        .textline('Texte single underline')
+        .align('left')
+        .fontsize(1, 2)
+        .textline('Texte taille (1, 2)')
+        .fontsize(2, 1)
+        .textline('Texte taille (2, 1)')
+        .fontsize(2, 2)
+        .textline('Texte taille (2, 2)')
+        .fontsize(4, 4)
+        .textline('Texte (4, 4)')
+        .fontsize(6, 6)
+        .textline('(6, 6)')
+        .fontsize(8, 8)
+        .textline('(8, 8)')
+        .drawline()
+        .fontsize(1, 1)
+        .textline('Charactères spéciaux : ')
+        .textline('@#&é§è!çà$€£%ù')
+        .drawline()
+        .textline('Le "s" doit etre sur une nouvelle ligne : ')
+        .textline('abcdefghijklmnopqrstuvwxyz0000abcdefghijklmnopqrs')
+        .drawline()
+        .table(tableHeaders, tableData)
+        .drawline()
+        .newline(2)
+        .text('CODEPAGE: ' + encoding)
+        .cut('full')
+        .encode()
+    );
   };
+
+  const onInit = async () => {
+    const Printer = printerList[selectedValue];
+    await Printer.init();
+  }
+
+  const onDisconnect = async () => {
+    const Printer = printerList[selectedValue];
+    await Printer.closeConn();
+  }
 
   const handleChangePrinterType = async (type: keyof typeof printerList) => {
     setSelectedValue((prev) => {
@@ -159,6 +215,7 @@ export default function App() {
       <View style={styles.rowDirection}>
         <Text>Host: </Text>
         <TextInput
+          value={selectedPrinter.host}
           placeholder="192.168.100.19"
           onChangeText={handleChangeHostAndPort("host")}
         />
@@ -166,6 +223,7 @@ export default function App() {
       <View style={styles.rowDirection}>
         <Text>Port: </Text>
         <TextInput
+          value={selectedPrinter.port}
           placeholder="9100"
           onChangeText={handleChangeHostAndPort("port")}
         />
@@ -190,6 +248,7 @@ export default function App() {
     <View style={styles.container}>
       <View style={styles.section}>
         <Text>Select printer type: </Text>
+        <Image source={require('./olaii-logo-black-small.png')} />
         {/* <Picker
           selectedValue={selectedValue}
           onValueChange={handleChangePrinterType}
@@ -207,17 +266,29 @@ export default function App() {
         <Text>Select printer: </Text>
         {selectedValue === "net" ? _renderNet() : _renderOther()}
       </View>
-      <Button
-        // disabled={!selectedPrinter?.device_name}
-        title="Connect"
-        onPress={handleConnectSelectedPrinter}
-      />
-      <Button
-        // disabled={!selectedPrinter?.device_name}
-        title="Print sample"
-        onPress={handlePrint}
-      />
-      <Loader loading={loading} />
+
+      <View style={styles.buttons}>
+        <Button 
+          title="Init"
+          onPress={onInit}
+        />
+        <Button
+          // disabled={!selectedPrinter?.device_name}
+          title="Connect"
+          onPress={handleConnectSelectedPrinter}
+        />
+        <Button
+          // disabled={!selectedPrinter}
+          title="Print sample"
+          onPress={handlePrint}
+        />
+        <Button
+          // disabled={!selectedPrinter}
+          title="Disconnect"
+          onPress={onDisconnect}
+        />
+      </View>
+      {/* <Loader loading={loading} /> */}
     </View>
   );
 }
@@ -234,4 +305,8 @@ const styles = StyleSheet.create({
   rowDirection: {
     flexDirection: "row",
   },
+  buttons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  }
 });

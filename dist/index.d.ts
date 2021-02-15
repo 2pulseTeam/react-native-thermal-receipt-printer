@@ -1,4 +1,7 @@
 import { NativeEventEmitter } from "react-native";
+import { PrinterEncoder, TabData } from "./printer.encoder";
+import { CodePage, EscPosEncoder } from "./escpos/escpos.encoder";
+export { EscPosEncoder, PrinterEncoder, CodePage, TabData };
 export interface PrinterOptions {
     beep?: boolean;
     cut?: boolean;
@@ -24,24 +27,21 @@ export declare const USBPrinter: {
     getDeviceList: () => Promise<IUSBPrinter[]>;
     connectPrinter: (vendorId: string, productId: string) => Promise<IUSBPrinter>;
     closeConn: () => Promise<void>;
-    printText: (text: string, opts?: PrinterOptions) => void;
-    printBill: (text: string, opts?: PrinterOptions) => void;
+    printRawData: (text: string) => void;
 };
 export declare const BLEPrinter: {
     init: () => Promise<void>;
     getDeviceList: () => Promise<IBLEPrinter[]>;
     connectPrinter: (inner_mac_address: string) => Promise<IBLEPrinter>;
     closeConn: () => Promise<void>;
-    printText: (text: string, opts?: PrinterOptions) => void;
-    printBill: (text: string, opts?: PrinterOptions) => void;
+    printRawData: (text: string) => void;
 };
 export declare const NetPrinter: {
     init: () => Promise<void>;
     getDeviceList: () => Promise<INetPrinter[]>;
     connectPrinter: (host: string, port: string) => Promise<INetPrinter>;
     closeConn: () => Promise<void>;
-    printText: (text: string, opts?: {}) => void;
-    printBill: (text: string, opts?: {}) => void;
+    printRawData: (text: string) => any;
 };
 export declare const NetPrinterEventEmitter: NativeEventEmitter;
 export declare enum RN_THERMAL_RECEIPT_PRINTER_EVENTS {

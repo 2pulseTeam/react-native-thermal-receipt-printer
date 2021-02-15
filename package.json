@@ -9,12 +9,14 @@
     "example": "yarn --cwd example",
     "bootstrap": "yarn example && yarn && yarn pods",
     "build": "rimraf ./dist && tsc",
-    "clean": "rimraf example/node_modules && rimraf node_modules"
+    "clean": "rimraf example/node_modules && rimraf node_modules",
+    "build:install": "yarn install && yarn build && yarn clean && yarn --prod && cd example && yarn install"
   },
   "files": [
     "dist",
     "android",
     "ios",
+    "windows",
     "react-native-thermal-receipt-printer.podspec"
   ],
   "repository": {
@@ -51,6 +53,6 @@
     "typescript": "^4.0.2"
   },
   "author": "jiope",
-  "homepage": "https://github.com/HeligPfleigh/react-native-thermal-receipt-printer#readme",
+  "homepage": "https://github.com/2pulseTeam/react-native-thermal-receipt-printer#readme",
   "license": "ISC"
 }

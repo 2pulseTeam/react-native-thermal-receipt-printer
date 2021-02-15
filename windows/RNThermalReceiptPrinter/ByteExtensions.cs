@@ -1,4 +1,4 @@
-﻿namespace ESCPOS_NET
+﻿namespace ThermalReceiptPrinter
 {
     public static class ByteExtensions
     {

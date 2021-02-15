@@ -7,8 +7,18 @@
 const path = require('path');
 const blacklist = require('metro-config/src/defaults/blacklist');
 
+// const pak = require('../package.json');
+
+const root = path.resolve(__dirname, '..');
+
+// const modules = Object.keys({
+//   ...pak.peerDependencies,
+// });
+
 module.exports = {
   resolver: {
+    projectRoot: __dirname,
+    watchFolders: [root],
     blacklistRE: blacklist([
       // This stops "react-native run-windows" from causing the metro server to crash if its already running
       new RegExp(

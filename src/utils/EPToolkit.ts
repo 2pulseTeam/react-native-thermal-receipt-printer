@@ -12,10 +12,15 @@ const c_end_bytes = Buffer.from([]); // [ 27, 97, 0 ];
 const r_start_bytes = Buffer.from([27, 97, 2]);
 const r_end_bytes = Buffer.from([]);
 
+const cr_bytes = Buffer.from([13]);
+const lf_bytes = Buffer.from([10]);
+const line_spacing_n180_bytes = Buffer.from([27, 51, 16]);
+const line_spacing_16_bytes = Buffer.from([27, 50]);
+
 const default_space_bytes = Buffer.from([27, 50]);
 
-const reset_bytes = Buffer.from([27, 97, 0, 29, 33, 0, 27, 50]);
-const m_start_bytes = Buffer.from([27, 33, 16, 28, 33, 8]);
+const reset_bytes = Buffer.from([27, 97, 0, 29, 33, 0, 27, 50]); // ESC a NUL GS ! NUL ESC 2
+const m_start_bytes = Buffer.from([27, 33, 16, 28, 33, 8]); // ESC ! DLE FS ! BS
 const m_end_bytes = Buffer.from([27, 33, 0, 28, 33, 0]);
 const b_start_bytes = Buffer.from([27, 33, 48, 28, 33, 12]);
 const b_end_bytes = Buffer.from([27, 33, 0, 28, 33, 0]);
@@ -31,6 +36,12 @@ const d_end_bytes = Buffer.from([27, 33, 0, 28, 33, 0]);
 const cut_bytes = Buffer.from([27, 105]);
 const beep_bytes = Buffer.from([27, 66, 3, 2]);
 const line_bytes = Buffer.from([10, 10, 10, 10, 10]);
+
+
+// const start_image_bytes = Buffer.from([27, 42]);
+
+// const set_line_spacing_9pin_bytes = Buffer.from([27, 43, 52, 56]);
+// const set_line_spacing_other_bytes = Buffer.from([27, 51, 50, 52]);
 
 const options_controller = {
   cut: cut_bytes,
@@ -115,46 +126,90 @@ export function exchange_text(text: string, options: IOptions): Buffer {
   return bytes.toBuffer();
 }
 
-// export async function exchange_image(
-//   imagePath: string,
-//   threshold: number
-// ): Promise<Buffer> {
-//   let bytes = new BufferHelper();
+export function exchange_image(
+  width: number,
+  height: number,
+  img: number[],
+): Buffer {
 
-//   try {
-//     // need to find other solution cause jimp is not working in RN
-//     const raw_image = await Jimp.read(imagePath);
-//     const img = raw_image.resize(250, 250).quality(60).greyscale();
+    // const source = Buffer.from(img);
+    // const height = Math.round(source.length / 256 * 4);
 
-//     let hex;
-//     const nl = img.bitmap.width % 256;
-//     const nh = Math.round(img.bitmap.width / 256);
+    const m = 0;
+    const nl = width % 256;
+    const nh = Math.round(width / 256);
+    const bytes = new BufferHelper();
+    bytes.concat(init_printer_bytes);
+    bytes.concat(default_space_bytes);
+    bytes.concat(line_spacing_n180_bytes);
 
-//     // data
-//     const data = Buffer.from([0, 0, 0]);
-//     const line = Buffer.from([10]);
-//     for (let i = 0; i < Math.round(img.bitmap.height / 24) + 1; i++) {
-//       // ESC * m nL nH bitmap
-//       let header = Buffer.from([27, 42, 33, nl, nh]);
-//       bytes.concat(header);
-//       for (let j = 0; j < img.bitmap.width; j++) {
-//         data[0] = data[1] = data[2] = 0; // Clear to Zero.
-//         for (let k = 0; k < 24; k++) {
-//           if (i * 24 + k < img.bitmap.height) {
-//             // if within the BMP size
-//             hex = img.getPixelColor(j, i * 24 + k);
-//             if (Jimp.intToRGBA(hex).r <= threshold) {
-//               data[Math.round(k / 8)] += 128 >> k % 8;
-//             }
-//           }
-//         }
-//         const dit = Buffer.from([data[0], data[1], data[2]]);
-//         bytes.concat(dit);
-//       }
-//       bytes.concat(line);
-//     } // data
-//   } catch (error) {
-//     console.log(error);
+    const getPixel = (x: number, y: number) => {
+      // console.log('getPixel', {
+      //   x,y, index: (width * y) + x, value: img[((width * y) + x)] 
+      // })
+      return img[((width * y) + x)]
+    };
+
+    for (let j = 0; j < height / 8; j = j + 8) {
+
+      bytes.concat(Buffer.from([27, 42, m, nl, nh]));
+      let result;
+      for (let i = 0; i < width; i++) {
+
+        result =
+          getPixel(i, j) << 7 |
+          getPixel(i, j + 1) << 6 |
+          getPixel(i, j + 2) << 5 |
+          getPixel(i, j + 3) << 4 |
+          getPixel(i, j + 4) << 3 |
+          getPixel(i, j + 5) << 2 |
+          getPixel(i, j + 6) << 1 |
+          getPixel(i, j + 7);
+
+        bytes.concat(Buffer.of(result));
+        
+          // const offset = k % 8;
+          // bytes.concat(0x80 >> offset);
+      }
+
+      bytes.concat(cr_bytes);
+      bytes.concat(lf_bytes);
+    }
+
+    // bytes.concat(Buffer.from(result));
+
+    bytes.concat(cr_bytes);
+    bytes.concat(lf_bytes); 
+
+    console.log('exchange_image', {
+        m, nl, nh, height, width, bytes
+    });
+    bytes.concat(line_spacing_16_bytes);
+    return bytes.toBuffer();
+}
+
+
+// const getPixel = (x: number, y: number) => source[((width * y) + x) * 4] > 0 ? 0 : 1;
+
+// const result = new Uint8Array((width * height) >> 3);
+
+// console.log('result', {result});
+
+// for (let y = 0; y < height; y++) {
+//   for (let x = 0; x < width; x = x + 8) {
+//     const i = (y * (width >> 3)) + (x >> 3);
+
+    
+//     result[i] =
+//                 getPixel(x + 0, y) << 7 |
+//                 getPixel(x + 1, y) << 6 |
+//                 getPixel(x + 2, y) << 5 |
+//                 getPixel(x + 3, y) << 4 |
+//                 getPixel(x + 4, y) << 3 |
+//                 getPixel(x + 5, y) << 2 |
+//                 getPixel(x + 6, y) << 1 |
+//                 getPixel(x + 7, y);
+  
+//     console.log('i', {x, y, i, res: result[i]});
 //   }
-//   return bytes.toBuffer();
 // }
