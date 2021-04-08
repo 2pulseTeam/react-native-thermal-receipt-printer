@@ -115,8 +115,8 @@ export const NetPrinter = {
   init: async (): Promise<void> => {
     if (Platform.OS === "windows") {
       return RNNetPrinter.init();
-    } 
-    
+    }
+
     return new Promise<void>((resolve, reject) =>
       RNNetPrinter.init(
         () => resolve(),
@@ -149,7 +149,7 @@ export const NetPrinter = {
       )
     );
   },
-  
+
   closeConn: (): Promise<void> =>
     new Promise((resolve) => {
       RNNetPrinter.closeConn();
@@ -157,9 +157,17 @@ export const NetPrinter = {
     }),
 
   printRawData: (text: string) => {
-    return RNNetPrinter.printRawData(text, (error: Error) => {
-      console.log('printRawData error', {error});
-    });
+
+    if (Platform.OS === 'ios') {
+      return RNNetPrinter.printRawData(text, {}, (error: Error) => {
+        console.log('printRawData error', {error});
+      })
+    } else {
+      return RNNetPrinter.printRawData(text, (error: Error) => {
+        console.log('printRawData error', {error});
+      });
+    }
+
   },
 
 };

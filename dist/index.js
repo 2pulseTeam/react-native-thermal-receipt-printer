@@ -130,9 +130,16 @@ export var NetPrinter = {
         });
     },
     printRawData: function (text) {
-        return RNNetPrinter.printRawData(text, function (error) {
-            console.log('printRawData error', { error: error });
-        });
+        if (Platform.OS === 'ios') {
+            return RNNetPrinter.printRawData(text, {}, function (error) {
+                console.log('printRawData error', { error: error });
+            });
+        }
+        else {
+            return RNNetPrinter.printRawData(text, function (error) {
+                console.log('printRawData error', { error: error });
+            });
+        }
     },
 };
 export var NetPrinterEventEmitter = new NativeEventEmitter(RNNetPrinter);
