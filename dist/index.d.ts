@@ -25,7 +25,7 @@ export interface INetPrinter {
 export declare const USBPrinter: {
     init: () => Promise<void>;
     getDeviceList: () => Promise<IUSBPrinter[]>;
-    connectPrinter: (vendorId: string, productId: string) => Promise<IUSBPrinter>;
+    connectPrinter: () => Promise<IUSBPrinter>;
     closeConn: () => Promise<void>;
     printRawData: (text: string) => void;
 };

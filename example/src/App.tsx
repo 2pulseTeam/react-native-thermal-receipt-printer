@@ -35,8 +35,6 @@ interface SelectedPrinter
 
 export default function App() {
 
-  console.log('STARTING APP ...');
-
   const [selectedValue, setSelectedValue] = React.useState<
     keyof typeof printerList
   >("net");
@@ -50,59 +48,37 @@ export default function App() {
     }
   );
 
-  React.useEffect(() => {
-    const getListDevices = async () => {
-      const Printer = printerList[selectedValue];
-      // get list device for net printers is support scanning in local ip but not recommended
-      if (selectedValue === "net") return;
-      try {
-        setLoading(true);
-        await Printer.init();
-        const results = await Printer.getDeviceList();
-        setDevices(
-          results.map((item: any) => ({ ...item, printerType: selectedValue }))
-        );
-      } catch (err) {
-        console.warn(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    getListDevices();
-  }, [selectedValue]);
+  console.log('STARTING APP ...', {selectedPrinter});
 
-  const handleConnectSelectedPrinter = () => {
-    if (!selectedPrinter) return;
-    const connect = async () => {
-      try {
-        setLoading(true);
-        switch (selectedPrinter.printerType) {
-          case "ble":
-            await BLEPrinter.connectPrinter(
-              selectedPrinter?.inner_mac_address || ""
-            );
-            break;
-          case "net":
-            await NetPrinter.connectPrinter(
-              selectedPrinter?.host || "",
-              selectedPrinter?.port || ""
-            );
-            break;
-          case "usb":
-            await USBPrinter.connectPrinter(
-              selectedPrinter?.vendor_id || "",
-              selectedPrinter?.product_id || ""
-            );
-            break;
-          default:
-        }
-      } catch (err) {
-        console.warn(err);
-      } finally {
-        setLoading(false);
+  const handleConnectSelectedPrinter = async () => {
+    try {
+      if (!selectedPrinter) return;
+      setLoading(true);
+      switch (selectedPrinter.printerType) {
+        case "ble":
+          await BLEPrinter.connectPrinter(
+            selectedPrinter?.inner_mac_address || ""
+          );
+          break;
+        case "net":
+          await NetPrinter.connectPrinter(
+            selectedPrinter?.host || "",
+            selectedPrinter?.port || ""
+          );
+          break;
+        case "usb":
+          await USBPrinter.connectPrinter(
+            //selectedPrinter?.vendor_id || "",
+            // selectedPrinter?.product_id || ""
+          );
+          break;
+        default:
       }
-    };
-    connect();
+    } catch (err) {
+      console.warn(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handlePrint = async () => {
@@ -186,6 +162,8 @@ export default function App() {
 
   const onInit = async () => {
     const Printer = printerList[selectedValue];
+
+    console.log('onInit', {selectedValue, Printer});
     await Printer.init();
   }
 
@@ -249,6 +227,15 @@ export default function App() {
       <View style={styles.section}>
         <Text>Select printer type: </Text>
         <Image source={require('./olaii-logo-black-small.png')} />
+
+        <Button title="net" onPress={() => {
+          setSelectedPrinter({...selectedPrinter, printerType: 'net'});
+          setSelectedValue('net');
+        }}></Button>
+        <Button title="usb" onPress={() => {
+          setSelectedPrinter({...selectedPrinter, printerType: 'usb'});
+          setSelectedValue('usb');
+        }}></Button>
         {/* <Picker
           selectedValue={selectedValue}
           onValueChange={handleChangePrinterType}

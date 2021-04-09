@@ -33,13 +33,19 @@ export interface INetPrinter {
 }
 
 export const USBPrinter = {
-  init: (): Promise<void> =>
-    new Promise((resolve, reject) =>
+  init: (): Promise<void> => {
+    
+    if (Platform.OS === "windows") {
+      return RNUSBPrinter.init();
+    } 
+
+    return new Promise<void>((resolve, reject) =>
       RNUSBPrinter.init(
         () => resolve(),
         (error: Error) => reject(error)
       )
-    ),
+    );
+  },
 
   getDeviceList: (): Promise<IUSBPrinter[]> =>
     new Promise((resolve, reject) =>
@@ -49,15 +55,21 @@ export const USBPrinter = {
       )
     ),
 
-  connectPrinter: (vendorId: string, productId: string): Promise<IUSBPrinter> =>
-    new Promise((resolve, reject) =>
+  connectPrinter: (/*vendorId: string, productId: string*/): Promise<IUSBPrinter> => {
+
+    if (Platform.OS === "windows") {
+      return RNUSBPrinter.connectPrinter();
+    } 
+
+    return new Promise((resolve, reject) =>
       RNUSBPrinter.connectPrinter(
-        vendorId,
-        productId,
+        //vendorId,
+        //productId,
         (printer: IUSBPrinter) => resolve(printer),
         (error: Error) => reject(error)
       )
-    ),
+    );
+  },
 
   closeConn: (): Promise<void> =>
     new Promise((resolve) => {
@@ -65,10 +77,11 @@ export const USBPrinter = {
       resolve();
     }),
 
-  printRawData: (text: string): void =>
-    RNUSBPrinter.printRawData(text, (error: Error) =>
+  printRawData: (text: string): void => {
+    return RNUSBPrinter.printRawData(text, (error: Error) =>
       console.warn(error)
-    ),
+    );
+  },
 
 };
 

@@ -43,6 +43,9 @@ var RNNetPrinter = NativeModules.RNNetPrinter;
 export { EscPosEncoder, PrinterEncoder, CodePage };
 export var USBPrinter = {
     init: function () {
+        if (Platform.OS === "windows") {
+            return RNUSBPrinter.init();
+        }
         return new Promise(function (resolve, reject) {
             return RNUSBPrinter.init(function () { return resolve(); }, function (error) { return reject(error); });
         });
@@ -52,9 +55,15 @@ export var USBPrinter = {
             return RNUSBPrinter.getDeviceList(function (printers) { return resolve(printers); }, function (error) { return reject(error); });
         });
     },
-    connectPrinter: function (vendorId, productId) {
+    connectPrinter: function ( /*vendorId: string, productId: string*/) {
+        if (Platform.OS === "windows") {
+            return RNUSBPrinter.connectPrinter();
+        }
         return new Promise(function (resolve, reject) {
-            return RNUSBPrinter.connectPrinter(vendorId, productId, function (printer) { return resolve(printer); }, function (error) { return reject(error); });
+            return RNUSBPrinter.connectPrinter(
+            //vendorId,
+            //productId,
+            function (printer) { return resolve(printer); }, function (error) { return reject(error); });
         });
     },
     closeConn: function () {

@@ -178,6 +178,19 @@ namespace RNThermalReceiptPrinter.Printers
             _socket?.Close();
             _socket?.Dispose();
 
+            _cancellationTokenSource?.Cancel();
+            FlushTimer?.Stop();
+            if (FlushTimer != null)
+            {
+                FlushTimer.Elapsed -= Flush;
+            }
+
+            FlushTimer?.Dispose();
+            Reader?.Close();
+            Reader?.Dispose();
+            Writer?.Close();
+            Writer?.Dispose();
+
             GC.SuppressFinalize(this);
         }
 

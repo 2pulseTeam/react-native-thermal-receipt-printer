@@ -13,6 +13,8 @@ yarn add react-native-thermal-receipt-printer
 
 ## Troubleshoot
 
+- when running cannot read .winmd file => make sure there is no special character in the file path
+
 - when install in `react-native` version >= 0.60, xcode show this error
 
 ```
@@ -281,3 +283,34 @@ _Note:_ get list device for net printers is support scanning in local ip but not
   ...
 
 ```
+
+
+
+# ADDENTUM
+
+## EPSON USB CONNECTION MUST BE SETUP ON PRINTER
+
+Voici autre chose à vérifier pour que l'installation de cette vidéo puisse fonctionner. Dans certains cas lorsque vous recevez l'imprimante ticket, elle n'est pas configurée par défaut avec la bonne interface (usb). Il faut donc faire une manipulation un peu spéciale sur l'imprimante pour régler cela (je pense que nous sortirons une vidéo dessus). Voici cette manipulation : 
+- éteignez l'imprimante
+- laissez le doigt enfoncé sur le bouton feed tout en allumant l'imprimante, ne relachez pas le doigt jusqu'à ce qu'un ticket sorte.
+- ensuite enfoncez une nouvelle fois le bouton feed jusqu'à ce qu'un second ticket sorte.
+Sur ce dernier ticket il y a des menus numérotés. Croyez le ou non on peu naviguer dans ces menus avec le seul bouton à notre disposition : le bouton feed. Pour accéder à un menu (admettons le menu 3 par exemple), vous appuyez 3 fois sur le bouton, et une 4 fois longuement pour valider le choix. Une fois le choix validé, vous entrez donc dans le menu et un autre ticket sort avec un nouveau menu et des numéros, et ainsi de suite. Pour revenir en arrière, on reste simplement le bouton feed enfoncé.
+Maintenant que vous savez comment faire, voici (approximativement désolé) dans quel menu aller, ou au moins chercher (je ne les connais plus par coeur, je referai une vidéo complète je pense). C'est quelque chose comme : "setup ..." "customise value settings", "interface selection", et il faut choisir usb. J'espère que cela pourra vous aider en attendant que nous fassions la vidéo.
+
+
+## Install ESC/POS Drivers
+
+1. Find your printer model (exemple: EPSON TM-T20III)
+
+2. Download and install 
+https://download.epson-biz.com/modules/pos/index.php 
+
+- then Softwares > {YourOS} > EPSON Advanced Printer Driver for {YourPrinterModel}
+- then OPOS ADK > EPSON OPOS ADK
+
+2. Verify status, print example with Espon Utility software
+
+3. Setup Printer in OPOS ADK
+- Start C:\Program Files (x86)\OPOS\Epson3\StartPos
+- Add POSPrinter device
+

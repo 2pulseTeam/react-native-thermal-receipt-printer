@@ -99,7 +99,6 @@ var EscPosEncoder = /** @class */ (function (_super) {
             var lastKey = Object.keys(columnsWidth).pop();
             columnsWidth[lastKey] += 48 - totalWidth;
         }
-        // padEnd each value to match column size
         values.forEach(function (value) {
             headers.forEach(function (header) {
                 _this.text(header.align === 'left'
