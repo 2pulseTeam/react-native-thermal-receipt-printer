@@ -1,3 +1,4 @@
+import { Platform } from "react-native";
 import { Buffer } from 'buffer';
 var PrinterEncoder = /** @class */ (function () {
     function PrinterEncoder(encoding) {
@@ -16,7 +17,9 @@ var PrinterEncoder = /** @class */ (function () {
     PrinterEncoder.prototype.encode = function () {
         var result = Buffer.concat(this._buffers);
         this._reset();
-        return result.toString('base64');
+        return Platform.OS === 'ios'
+            ? result.toString()
+            : result.toString('base64');
     };
     return PrinterEncoder;
 }());

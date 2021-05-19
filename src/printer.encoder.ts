@@ -1,7 +1,8 @@
+import { Platform } from "react-native";
 import { Buffer } from 'buffer';
 
 export abstract class PrinterEncoder {
-  
+
   _buffers: Buffer[];
   _encoding: string;
 
@@ -16,8 +17,8 @@ export abstract class PrinterEncoder {
 
   protected _queue(values: Array<Buffer | number>): void {
     this._buffers.push(
-      ...values.map(value => typeof value === 'number' 
-        ? Buffer.of(value) 
+      ...values.map(value => typeof value === 'number'
+        ? Buffer.of(value)
         : value
       )
     );
@@ -29,17 +30,20 @@ export abstract class PrinterEncoder {
 
     this._reset();
 
-    return result.toString('base64');
+    return Platform.OS === 'ios'
+      ? result.toString()
+      : result.toString('base64');
+
   }
 
   abstract initialize(): PrinterEncoder;
-  
+
   abstract newline(value?: number): PrinterEncoder;
 
   abstract text(value: string): PrinterEncoder;
 
   abstract textline(value: string): PrinterEncoder;
-  
+
   abstract position(value: number): PrinterEncoder;
 
   abstract table(headers: TabHeader[], values: TabData[]): PrinterEncoder;
