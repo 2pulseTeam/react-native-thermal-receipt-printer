@@ -14,6 +14,7 @@ var __extends = (this && this.__extends) || (function () {
 import { PrinterEncoder } from "../printer.encoder";
 import { EscPosCommands } from "./commands";
 import * as iconv from "iconv-lite";
+import latinize from 'latinize';
 // n Character Type
 // 0PC437 (USA: Standard Europe)
 // 1Katakana
@@ -68,7 +69,8 @@ var EscPosEncoder = /** @class */ (function (_super) {
     };
     EscPosEncoder.prototype.text = function (value) {
         var _this = this;
-        this._queue(Array.from(value).map(function (char) { return iconv.encode(char, _this._encoding); }));
+        var latinized = latinize(value);
+        this._queue(Array.from(latinized).map(function (char) { return iconv.encode(char, _this._encoding); }));
         return this;
     };
     EscPosEncoder.prototype.textline = function (value) {

@@ -19,7 +19,7 @@ export abstract class PrinterEncoder {
     this._buffers.push(
       ...values.map(value => typeof value === 'number'
         ? Buffer.of(value)
-        : value
+        : value as any
       )
     );
   }

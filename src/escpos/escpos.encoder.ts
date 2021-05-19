@@ -1,6 +1,7 @@
 import { PrinterEncoder, TabData, TabHeader } from "../printer.encoder";
 import { EscPosCommands } from "./commands";
 import * as iconv from "iconv-lite";
+import latinize from 'latinize';
 
     // n Character Type
     // 0PC437 (USA: Standard Europe)
@@ -22,7 +23,7 @@ export const CodePage = {
   PC863: 0x04,
   PC865: 0x05,
   WPC1252: 0x10,
-  1252: 0x10, 
+  1252: 0x10,
   PC866: 0x11,
   PC852: 0x12,
   852: 0x12,
@@ -61,7 +62,10 @@ export class EscPosEncoder extends PrinterEncoder {
   }
 
   text(value: string): PrinterEncoder {
-    this._queue(Array.from(value).map(char => iconv.encode(char, this._encoding)));
+
+    const latinized = latinize(value);
+
+    this._queue(Array.from(latinized).map(char => iconv.encode(char, this._encoding)));
     return this;
   }
 
@@ -71,7 +75,7 @@ export class EscPosEncoder extends PrinterEncoder {
     return this;
   }
 
-  
+
   table(headers: TabHeader[], values: TabData[]): PrinterEncoder {
 
     const initialWidth = headers.reduce((acc, header) => {
@@ -101,12 +105,12 @@ export class EscPosEncoder extends PrinterEncoder {
       const lastKey = Object.keys(columnsWidth).pop()!;
       columnsWidth[lastKey] += 48 - totalWidth;
     }
-    
+
     values.forEach(value => {
       headers.forEach(header => {
-        this.text(header.align === 'left' 
+        this.text(header.align === 'left'
           ? value[header.key].padEnd(columnsWidth[header.key])
-          : value[header.key].padStart(columnsWidth[header.key]) 
+          : value[header.key].padStart(columnsWidth[header.key])
         )
       });
 
@@ -131,7 +135,7 @@ export class EscPosEncoder extends PrinterEncoder {
 
   bold(value: boolean): PrinterEncoder {
     this._queue([
-      EscPosCommands.BOLD, 
+      EscPosCommands.BOLD,
       value ? 0x01 : 0x00
     ]);
     return this;
@@ -215,7 +219,7 @@ export class EscPosEncoder extends PrinterEncoder {
   cut(value: "full" | "partial"): PrinterEncoder {
     this.newline();
     this._queue([
-      EscPosCommands.CUT, 
+      EscPosCommands.CUT,
       value === 'partial' ? 0x42 : 0x41,
       0x10,
     ]);

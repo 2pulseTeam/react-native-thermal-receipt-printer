@@ -943,6 +943,11 @@
     jest-diff "^25.2.1"
     pretty-format "^25.2.1"
 
+"@types/latinize@^0.2.15":
+  version "0.2.15"
+  resolved "https://registry.yarnpkg.com/@types/latinize/-/latinize-0.2.15.tgz#a1718e53c5d6a37a554cbe4209e4ab15adc975f9"
+  integrity sha1-oXGOU8XWo3pVTL5CCeSrFa3Jdfk=
+
 "@types/node@^14.6.0":
   version "14.6.0"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-14.6.0.tgz#7d4411bf5157339337d7cff864d9ff45f177b499"
@@ -2686,6 +2691,11 @@ klaw@^1.0.0:
   integrity sha1-QIhDO0azsbolnXh4XY6W9zugJDk=
   optionalDependencies:
     graceful-fs "^4.1.9"
+
+latinize@^0.5.0:
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/latinize/-/latinize-0.5.0.tgz#b81cc6faf3b4e6373b771c50c1a6d96df653f392"
+  integrity sha512-SHzxgdcFP/64lUEfX3183QALY2KdSQxad3gmhCc/b03QN1mbx0AnJWvsQjqoJLbucY9pJuK+NMbnasUIocDmnQ==
 
 leven@^3.1.0:
   version "3.1.0"
