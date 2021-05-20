@@ -5,7 +5,7 @@ export declare abstract class PrinterEncoder {
     constructor(encoding: string);
     private _reset;
     protected _queue(values: Array<Buffer | number>): void;
-    encode(): string | Buffer;
+    encode(): string;
     abstract initialize(): PrinterEncoder;
     abstract newline(value?: number): PrinterEncoder;
     abstract text(value: string): PrinterEncoder;

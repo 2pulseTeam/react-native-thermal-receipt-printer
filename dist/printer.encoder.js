@@ -18,7 +18,7 @@ var PrinterEncoder = /** @class */ (function () {
         var result = Buffer.concat(this._buffers);
         this._reset();
         return Platform.OS === 'ios'
-            ? result
+            ? result.toString('hex')
             : result.toString('base64');
     };
     return PrinterEncoder;

@@ -31,7 +31,7 @@ export abstract class PrinterEncoder {
     this._reset();
 
     return Platform.OS === 'ios'
-      ? result
+      ? result.toString('hex')
       : result.toString('base64');
 
   }
