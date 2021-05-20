@@ -24,14 +24,14 @@ export abstract class PrinterEncoder {
     );
   }
 
-  encode(): string {
+  encode() {
 
     const result = Buffer.concat(this._buffers);
 
     this._reset();
 
     return Platform.OS === 'ios'
-      ? result.toString()
+      ? result
       : result.toString('base64');
 
   }

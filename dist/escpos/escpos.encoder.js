@@ -28,17 +28,38 @@ import latinize from 'latinize';
 // 19PC858
 // 255Blank page
 export var CodePage = {
-    PC437: 0x00,
-    PC850: 0x02,
-    PC860: 0x03,
-    PC863: 0x04,
-    PC865: 0x05,
-    WPC1252: 0x10,
-    1252: 0x10,
-    PC866: 0x11,
-    PC852: 0x12,
-    852: 0x12,
-    PC858: 0x13,
+    'cp437': 0x00,
+    'cp737': 0x40,
+    'cp850': 0x02,
+    'cp775': 0x5f,
+    'cp852': 0x12,
+    'cp855': 0x3c,
+    'cp857': 0x3d,
+    'cp858': 0x13,
+    'cp860': 0x03,
+    'cp861': 0x38,
+    'cp862': 0x3e,
+    'cp863': 0x04,
+    'cp864': 0x1c,
+    'cp865': 0x05,
+    'cp866': 0x11,
+    'cp869': 0x42,
+    'cp936': 0xff,
+    'cp949': 0xfd,
+    'cp950': 0xfe,
+    'cp1252': 0x10,
+    'iso88596': 0x16,
+    'shiftjis': 0xfc,
+    'windows874': 0x1e,
+    'windows1250': 0x48,
+    'windows1251': 0x49,
+    'windows1252': 0x47,
+    'windows1253': 0x5a,
+    'windows1254': 0x5b,
+    'windows1255': 0x20,
+    'windows1256': 0x5c,
+    'windows1257': 0x19,
+    'windows1258': 0x5e,
 };
 var EscPosEncoder = /** @class */ (function (_super) {
     __extends(EscPosEncoder, _super);
@@ -47,7 +68,7 @@ var EscPosEncoder = /** @class */ (function (_super) {
     }
     EscPosEncoder.prototype.initialize = function () {
         var codepage = CodePage[this._encoding];
-        if (!codepage)
+        if (typeof codepage !== 'number')
             throw new Error('EscPosEncoder.initialize - codepage is unknown : ' + this._encoding);
         this._queue([
             EscPosCommands.INIT_PRINTER,
