@@ -118,15 +118,64 @@ var EscPosEncoder = /** @class */ (function (_super) {
             acc += columnsWidth[key];
             return acc;
         }, 0);
+        if (totalWidth > 48) {
+            var largestColumn = Object.keys(columnsWidth).reduce(function (acc, key) {
+                if (columnsWidth[key] > acc.value) {
+                    acc = {
+                        value: columnsWidth[key],
+                        key: key,
+                    };
+                }
+                return acc;
+            }, { value: 0, key: '' });
+            columnsWidth[largestColumn.key] = Math.floor(largestColumn.value / 2);
+        }
+        totalWidth = Object.keys(columnsWidth).reduce(function (acc, key) {
+            acc += columnsWidth[key];
+            return acc;
+        }, 0);
         if (totalWidth < 48) {
             var lastKey = Object.keys(columnsWidth).pop();
             columnsWidth[lastKey] += 48 - totalWidth;
         }
+        headers.forEach(function (header) {
+            _this.bold(true)
+                .text(header.align === 'left'
+                ? header.label.padEnd(columnsWidth[header.key])
+                : header.label.padStart(columnsWidth[header.key]))
+                .bold(false);
+        });
         values.forEach(function (value) {
+            var isOverflow = {};
             headers.forEach(function (header) {
+                var columnWidth = columnsWidth[header.key];
+                isOverflow[header.key] = value[header.key].length > columnWidth;
+                var text = value[header.key].slice(0, columnWidth);
                 _this.text(header.align === 'left'
-                    ? value[header.key].padEnd(columnsWidth[header.key])
-                    : value[header.key].padStart(columnsWidth[header.key]));
+                    ? text.padEnd(columnWidth)
+                    : text.padStart(columnWidth));
+            });
+            Object.keys(isOverflow)
+                .filter(function (key) { return isOverflow[key]; })
+                .forEach(function (key, index) {
+                var previousPad = Object.keys(columnsWidth).slice(0, index).reduce(function (acc, key) {
+                    acc += columnsWidth[key];
+                    return acc;
+                }, 0);
+                var header = headers.find(function (header) { return header.key === key; });
+                var columnWidth = columnsWidth[key];
+                var text = value[key].slice(columnWidth);
+                var rowIndex = 1;
+                while (text.length > 0) {
+                    text = value[key].slice(rowIndex * columnWidth, (rowIndex + 1) * columnWidth);
+                    text = text.padStart(previousPad);
+                    _this.text((header === null || header === void 0 ? void 0 : header.align) === 'left'
+                        ? text.padEnd(columnWidth + previousPad)
+                        : text.padStart(columnWidth + previousPad));
+                    _this.newline();
+                    rowIndex++;
+                }
+                _this.newline();
             });
             _this.newline();
         });

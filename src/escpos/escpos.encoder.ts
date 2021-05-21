@@ -117,7 +117,28 @@ export class EscPosEncoder extends PrinterEncoder {
       return acc;
     }, initialWidth);
 
-    const totalWidth = Object.keys(columnsWidth).reduce((acc, key) => {
+    let totalWidth = Object.keys(columnsWidth).reduce((acc, key) => {
+      acc += columnsWidth[key];
+      return acc;
+    }, 0);
+
+    if (totalWidth > 48) {
+
+      const largestColumn = Object.keys(columnsWidth).reduce((acc, key) => {
+        if (columnsWidth[key] > acc.value) {
+          acc = {
+            value: columnsWidth[key],
+            key,
+          }
+        }
+        return acc;
+      }, {value: 0, key: ''});
+
+      columnsWidth[largestColumn.key] = Math.floor(largestColumn.value / 2);
+
+    }
+
+    totalWidth = Object.keys(columnsWidth).reduce((acc, key) => {
       acc += columnsWidth[key];
       return acc;
     }, 0);
@@ -127,13 +148,61 @@ export class EscPosEncoder extends PrinterEncoder {
       columnsWidth[lastKey] += 48 - totalWidth;
     }
 
+    headers.forEach(header => {
+      this.bold(true)
+        .text(header.align === 'left'
+          ? header.label.padEnd(columnsWidth[header.key])
+          : header.label.padStart(columnsWidth[header.key])
+        )
+        .bold(false);
+    });
+
     values.forEach(value => {
+
+      let isOverflow = {};
+
       headers.forEach(header => {
+        const columnWidth = columnsWidth[header.key];
+
+        isOverflow[header.key] = value[header.key].length > columnWidth;
+
+        let text = value[header.key].slice(0, columnWidth);
+
         this.text(header.align === 'left'
-          ? value[header.key].padEnd(columnsWidth[header.key])
-          : value[header.key].padStart(columnsWidth[header.key])
+          ? text.padEnd(columnWidth)
+          : text.padStart(columnWidth)
         )
       });
+
+      Object.keys(isOverflow)
+      .filter(key => isOverflow[key])
+      .forEach((key, index) => {
+
+        const previousPad = Object.keys(columnsWidth).slice(0, index).reduce((acc, key) => {
+          acc += columnsWidth[key];
+          return acc;
+        }, 0);
+        const header = headers.find(header => header.key === key);
+
+        const columnWidth = columnsWidth[key];
+        let text = value[key].slice(columnWidth);
+
+        let rowIndex = 1;
+        while(text.length > 0) {
+          text = value[key].slice(rowIndex * columnWidth, (rowIndex + 1) * columnWidth);
+
+          text = text.padStart(previousPad);
+
+          this.text(header?.align === 'left'
+            ? text.padEnd(columnWidth + previousPad)
+            : text.padStart(columnWidth + previousPad)
+          )
+
+          this.newline();
+
+          rowIndex++;
+        }
+      })
 
       this.newline();
     });
