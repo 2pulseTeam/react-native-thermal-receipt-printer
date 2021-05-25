@@ -102,7 +102,8 @@ var EscPosEncoder = /** @class */ (function (_super) {
     EscPosEncoder.prototype.table = function (headers, values) {
         var _this = this;
         var initialWidth = headers.reduce(function (acc, header) {
-            acc[header.key] = 0;
+            var _a;
+            acc[header.key] = (((_a = header === null || header === void 0 ? void 0 : header.label) === null || _a === void 0 ? void 0 : _a.length) + 1) || 0;
             return acc;
         }, {});
         // get each column size = max(values[header])
@@ -128,7 +129,7 @@ var EscPosEncoder = /** @class */ (function (_super) {
                 }
                 return acc;
             }, { value: 0, key: '' });
-            columnsWidth[largestColumn.key] = Math.floor(largestColumn.value / 2);
+            columnsWidth[largestColumn.key] = Math.floor(largestColumn.value * 2 / 3);
         }
         totalWidth = Object.keys(columnsWidth).reduce(function (acc, key) {
             acc += columnsWidth[key];
@@ -168,14 +169,15 @@ var EscPosEncoder = /** @class */ (function (_super) {
                 var rowIndex = 1;
                 while (text.length > 0) {
                     text = value[key].slice(rowIndex * columnWidth, (rowIndex + 1) * columnWidth);
-                    text = text.padStart(previousPad);
+                    var paddedText = text.padStart(previousPad);
                     _this.text((header === null || header === void 0 ? void 0 : header.align) === 'left'
-                        ? text.padEnd(columnWidth + previousPad)
-                        : text.padStart(columnWidth + previousPad));
-                    _this.newline();
+                        ? paddedText.padEnd(columnWidth + previousPad)
+                        : paddedText.padStart(columnWidth + previousPad));
+                    if (text.length >= columnWidth) {
+                        _this.newline();
+                    }
                     rowIndex++;
                 }
-                _this.newline();
             });
             _this.newline();
         });

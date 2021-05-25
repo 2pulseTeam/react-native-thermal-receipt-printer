@@ -100,7 +100,7 @@ export class EscPosEncoder extends PrinterEncoder {
   table(headers: TabHeader[], values: TabData[]): PrinterEncoder {
 
     const initialWidth = headers.reduce((acc, header) => {
-      acc[header.key] = 0;
+      acc[header.key] = (header?.label?.length + 1) || 0;
       return acc;
     }, {} as {
       [key: string]: number
@@ -134,7 +134,7 @@ export class EscPosEncoder extends PrinterEncoder {
         return acc;
       }, {value: 0, key: ''});
 
-      columnsWidth[largestColumn.key] = Math.floor(largestColumn.value / 2);
+      columnsWidth[largestColumn.key] = Math.floor(largestColumn.value * 2 / 3);
 
     }
 
@@ -191,14 +191,16 @@ export class EscPosEncoder extends PrinterEncoder {
         while(text.length > 0) {
           text = value[key].slice(rowIndex * columnWidth, (rowIndex + 1) * columnWidth);
 
-          text = text.padStart(previousPad);
+          const paddedText = text.padStart(previousPad);
 
           this.text(header?.align === 'left'
-            ? text.padEnd(columnWidth + previousPad)
-            : text.padStart(columnWidth + previousPad)
+            ? paddedText.padEnd(columnWidth + previousPad)
+            : paddedText.padStart(columnWidth + previousPad)
           )
 
-          this.newline();
+          if (text.length >= columnWidth) {
+            this.newline();
+          }
 
           rowIndex++;
         }
